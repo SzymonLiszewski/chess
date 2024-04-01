@@ -5,8 +5,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Bishop extends Piece{
-    public Bishop(Position position, Image image) {
-        super(position, image);
+    public Bishop(Position position, Image image, Game game) {
+        super(position, image, game);
     }
 
     @Override
@@ -19,8 +19,11 @@ public class Bishop extends Piece{
             }
         }
         if (isPossible){
+            System.out.println("test");
+            game.pieces.remove(this.position);
             this.position.X = position.getX();
             this.position.Y = position.getY();
+            game.pieces.put(position,this);
         }
     }
 

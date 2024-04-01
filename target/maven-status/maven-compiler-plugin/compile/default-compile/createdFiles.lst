@@ -1,6 +1,6 @@
 pieces\Bishop.class
+pieces\Game.class
 Main.class
 pieces\Position.class
 MyApplication.class
-Game.class
 pieces\Piece.class

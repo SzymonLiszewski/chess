@@ -1,16 +1,16 @@
 import javafx.application.Application;
 import javafx.scene.Scene;
-import javafx.scene.control.Label;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.StackPane;
-import javafx.scene.text.Text;
 import javafx.stage.Stage;
+import pieces.Game;
 import pieces.Piece;
 import pieces.Position;
 
-import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class Main extends Application {
     public static Piece onMove = null;
@@ -27,14 +27,14 @@ public class Main extends Application {
         ImageView imageView = new ImageView(new Image(imageUrl));
 
         //adding views of chess pieces
-        List<ImageView> views = new ArrayList<>();
-        for (Piece element : game.pieces){
-            views.add(new ImageView(element.getImage()));
+        Map<Position,ImageView> views = new HashMap<>();
+        for (Map.Entry<Position, Piece> element : game.pieces.entrySet()){
+            views.put(element.getKey(),new ImageView(element.getValue().getImage()));
         }
         //setting pieces display position
-        for (int i=0;i<views.size();i++){
-            views.get(i).setTranslateX(-350+(game.pieces.get(i).getPosition().getX()-1)*100);
-            views.get(i).setTranslateY(+350+(game.pieces.get(i).getPosition().getY()-1)*(-100));
+        for (Map.Entry<Position, ImageView> element : views.entrySet()){
+            element.getValue().setTranslateX(-350+(element.getKey().getX()-1)*100);
+            element.getValue().setTranslateY(+350+(element.getKey().getY()-1)*(-100));
         }
 
         StackPane root = new StackPane();
@@ -46,25 +46,25 @@ public class Main extends Application {
             System.out.println("Kliknięto myszką na pozycji X: " + (int)((mouseX)/100+1) + ", Y: " + (int)(-(mouseY)/100+9));
             int x1 = (int)((mouseX)/100+1);
             int y1 = (int)(-(mouseY)/100+9);
-            if (x1 == game.pieces.get(0).getPosition().getX() && y1 == game.pieces.get(0).getPosition().getY()) {
-                List<Position> l = game.pieces.get(0).getPossibleMoves();
+            if (game.pieces.get(new Position(x1,y1)) != null) {
+                List<Position> l = game.pieces.get(new Position(x1,y1)).getPossibleMoves();
                 for (Position p : l) {
                     //System.out.println(String.valueOf(p.getX())+", "+String.valueOf(p.getY()));
                 }
             }
                 if (onMove == null){
-                    onMove = game.pieces.get(0);
+                    onMove = game.pieces.get(new Position(x1,y1));
                 }
                 else{
                     onMove.Move(new Position(x1, y1));
-                    System.out.println("nowa poz: "+String.valueOf(game.pieces.get(0).getPosition().getX())+", "+String.valueOf(game.pieces.get(0).getPosition().getY()));
+                    System.out.println("nowa poz: "+String.valueOf(game.pieces.get(new Position(x1,y1)).getPosition().getX())+", "+String.valueOf(game.pieces.get(new Position(x1,y1)).getPosition().getY()));
                     drawBoard(game, stage, imageUrl);
                     onMove = null;
                 }
         });
 
 
-        for (ImageView view : views){
+        for (ImageView view : views.values()){
             root.getChildren().add(view);
         }
 
