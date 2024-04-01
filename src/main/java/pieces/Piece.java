@@ -8,12 +8,14 @@ public abstract class Piece {
     Position position;
     Image image;
     Game game;
+    char color;
     public abstract List<Position> getPossibleMoves();
 
-    public Piece(Position position, Image image, Game game) {
+    public Piece(Position position, Image image, Game game, char color) {
         this.position = position;
         this.image = image;
         this.game = game;
+        this.color = color;
     }
 
     public Position getPosition() {
@@ -28,11 +30,24 @@ public abstract class Piece {
             }
         }
         if (isPossible){
-            System.out.println("test");
-            game.pieces.remove(this.position);
-            this.position.X = position.getX();
-            this.position.Y = position.getY();
-            game.pieces.put(position,this);
+            if (this.game.onMove == 'w'){
+                System.out.println("test");
+                game.whitePieces.remove(this.position);
+                if (game.blackPieces.get(position)!=null){game.blackPieces.remove(position);}
+                this.position.X = position.getX();
+                this.position.Y = position.getY();
+                game.whitePieces.put(position,this);
+                this.game.onMove = 'b';
+            }
+            else if (this.game.onMove == 'b'){
+                System.out.println("test");
+                game.blackPieces.remove(this.position);
+                if (game.whitePieces.get(position)!=null){game.whitePieces.remove(position);}
+                this.position.X = position.getX();
+                this.position.Y = position.getY();
+                game.blackPieces.put(position,this);
+                this.game.onMove = 'w';
+            }
         }
     };
 

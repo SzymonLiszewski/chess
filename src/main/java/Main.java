@@ -28,7 +28,10 @@ public class Main extends Application {
 
         //adding views of chess pieces
         Map<Position,ImageView> views = new HashMap<>();
-        for (Map.Entry<Position, Piece> element : game.pieces.entrySet()){
+        for (Map.Entry<Position, Piece> element : game.whitePieces.entrySet()){
+            views.put(element.getKey(),new ImageView(element.getValue().getImage()));
+        }
+        for (Map.Entry<Position, Piece> element : game.blackPieces.entrySet()){
             views.put(element.getKey(),new ImageView(element.getValue().getImage()));
         }
         //setting pieces display position
@@ -46,14 +49,15 @@ public class Main extends Application {
             System.out.println("Kliknięto myszką na pozycji X: " + (int)((mouseX)/100+1) + ", Y: " + (int)(-(mouseY)/100+9));
             int x1 = (int)((mouseX)/100+1);
             int y1 = (int)(-(mouseY)/100+9);
-            if (game.pieces.get(new Position(x1,y1)) != null) {
-                List<Position> l = game.pieces.get(new Position(x1,y1)).getPossibleMoves();
-                for (Position p : l) {
-                    System.out.println(String.valueOf(p.getX())+", "+String.valueOf(p.getY()));
+            if (game.onMove == 'w'){
+                if (game.whitePieces.get(new Position(x1,y1)) != null) {
+                    List<Position> l = game.whitePieces.get(new Position(x1,y1)).getPossibleMoves();
+                    for (Position p : l) {
+                        System.out.println(String.valueOf(p.getX())+", "+String.valueOf(p.getY()));
+                    }
                 }
-            }
                 if (onMove == null){
-                    onMove = game.pieces.get(new Position(x1,y1));
+                    onMove = game.whitePieces.get(new Position(x1,y1));
                     //System.out.println(onMove.getImage());
                 }
                 else{
@@ -62,6 +66,26 @@ public class Main extends Application {
                     drawBoard(game, stage, imageUrl);
                     onMove = null;
                 }
+            }
+            else if (game.onMove == 'b'){
+                if (game.blackPieces.get(new Position(x1,y1)) != null) {
+                    List<Position> l = game.blackPieces.get(new Position(x1,y1)).getPossibleMoves();
+                    for (Position p : l) {
+                        System.out.println(String.valueOf(p.getX())+", "+String.valueOf(p.getY()));
+                    }
+                }
+                if (onMove == null){
+                    onMove = game.blackPieces.get(new Position(x1,y1));
+                    //System.out.println(onMove.getImage());
+                }
+                else{
+                    onMove.Move(new Position(x1, y1));
+                    //System.out.println("nowa poz: "+String.valueOf(game.pieces.get(new Position(x1,y1)).getPosition().getX())+", "+String.valueOf(game.pieces.get(new Position(x1,y1)).getPosition().getY()));
+                    drawBoard(game, stage, imageUrl);
+                    onMove = null;
+                }
+            }
+
         });
 
 

@@ -6,8 +6,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Rook extends Piece{
-    public Rook(Position position, Image image, Game game) {
-        super(position, image, game);
+    public Rook(Position position, Image image, Game game, char color) {
+        super(position, image, game, color);
     }
 
     @Override

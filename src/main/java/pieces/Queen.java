@@ -6,8 +6,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Queen extends Piece{
-    public Queen(Position position, Image image, Game game) {
-        super(position, image, game);
+    public Queen(Position position, Image image, Game game, char color) {
+        super(position, image, game, color);
     }
 
     @Override
