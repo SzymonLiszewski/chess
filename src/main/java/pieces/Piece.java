@@ -19,7 +19,22 @@ public abstract class Piece {
     public Position getPosition() {
         return position;
     }
-    public abstract void Move(Position position);
+    public void Move(Position position){
+        Boolean isPossible = false;
+        for (Position p : this.getPossibleMoves()){
+            if (position.getX() == p.getX() && position.getY() == p.getY()){
+                isPossible = true;
+                break;
+            }
+        }
+        if (isPossible){
+            System.out.println("test");
+            game.pieces.remove(this.position);
+            this.position.X = position.getX();
+            this.position.Y = position.getY();
+            game.pieces.put(position,this);
+        }
+    };
 
     public Image getImage() {
         return image;

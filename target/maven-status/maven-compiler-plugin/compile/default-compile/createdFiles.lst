@@ -1,6 +1,11 @@
-pieces\Bishop.class
 pieces\Game.class
 Main.class
 pieces\Position.class
+pieces\Queen.class
+pieces\Pawn.class
+pieces\Bishop.class
+pieces\Rook.class
+pieces\Knight.class
 MyApplication.class
+pieces\King.class
 pieces\Piece.class

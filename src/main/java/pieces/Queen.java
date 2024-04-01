@@ -1,15 +1,14 @@
 package pieces;
 
 import javafx.scene.image.Image;
+
 import java.util.ArrayList;
 import java.util.List;
 
-public class Bishop extends Piece{
-    public Bishop(Position position, Image image, Game game) {
+public class Queen extends Piece{
+    public Queen(Position position, Image image, Game game) {
         super(position, image, game);
     }
-
-
 
     @Override
     public List<Position> getPossibleMoves() {
@@ -40,6 +39,30 @@ public class Bishop extends Piece{
         while (x>1 && y<8){
             x-=1;
             y+=1;
+            moves.add(new Position(x,y));
+        }
+        x = this.position.X;
+        y = this.position.Y;
+        while (x<8){
+            x+=1;
+            moves.add(new Position(x,y));
+        }
+        x = this.position.X;
+        y = this.position.Y;
+        while (x>1){
+            x-=1;
+            moves.add(new Position(x,y));
+        }
+        x = this.position.X;
+        y = this.position.Y;
+        while (y<8){
+            y+=1;
+            moves.add(new Position(x,y));
+        }
+        x = this.position.X;
+        y = this.position.Y;
+        while (y>1){
+            y-=1;
             moves.add(new Position(x,y));
         }
         return moves;

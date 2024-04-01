@@ -49,15 +49,16 @@ public class Main extends Application {
             if (game.pieces.get(new Position(x1,y1)) != null) {
                 List<Position> l = game.pieces.get(new Position(x1,y1)).getPossibleMoves();
                 for (Position p : l) {
-                    //System.out.println(String.valueOf(p.getX())+", "+String.valueOf(p.getY()));
+                    System.out.println(String.valueOf(p.getX())+", "+String.valueOf(p.getY()));
                 }
             }
                 if (onMove == null){
                     onMove = game.pieces.get(new Position(x1,y1));
+                    //System.out.println(onMove.getImage());
                 }
                 else{
                     onMove.Move(new Position(x1, y1));
-                    System.out.println("nowa poz: "+String.valueOf(game.pieces.get(new Position(x1,y1)).getPosition().getX())+", "+String.valueOf(game.pieces.get(new Position(x1,y1)).getPosition().getY()));
+                    //System.out.println("nowa poz: "+String.valueOf(game.pieces.get(new Position(x1,y1)).getPosition().getX())+", "+String.valueOf(game.pieces.get(new Position(x1,y1)).getPosition().getY()));
                     drawBoard(game, stage, imageUrl);
                     onMove = null;
                 }
