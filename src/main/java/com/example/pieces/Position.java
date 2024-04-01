@@ -1,4 +1,4 @@
-package pieces;
+package com.example.pieces;
 
 import java.util.Objects;
 

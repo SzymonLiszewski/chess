@@ -1,4 +1,4 @@
-package pieces;
+package com.example.pieces;
 
 import javafx.scene.image.Image;
 import java.util.ArrayList;

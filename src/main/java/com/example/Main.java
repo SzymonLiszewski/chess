@@ -1,12 +1,14 @@
+package com.example;
+
 import javafx.application.Application;
 import javafx.scene.Scene;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.StackPane;
 import javafx.stage.Stage;
-import pieces.Game;
-import pieces.Piece;
-import pieces.Position;
+import com.example.pieces.Game;
+import com.example.pieces.Piece;
+import com.example.pieces.Position;
 
 import java.util.HashMap;
 import java.util.List;
@@ -46,15 +48,11 @@ public class Main extends Application {
         root.setOnMouseClicked(event -> {
             double mouseX = event.getSceneX();
             double mouseY = event.getSceneY();
-            System.out.println("Kliknięto myszką na pozycji X: " + (int)((mouseX)/100+1) + ", Y: " + (int)(-(mouseY)/100+9));
             int x1 = (int)((mouseX)/100+1);
             int y1 = (int)(-(mouseY)/100+9);
             if (game.onMove == 'w'){
                 if (game.whitePieces.get(new Position(x1,y1)) != null) {
                     List<Position> l = game.whitePieces.get(new Position(x1,y1)).getPossibleMoves();
-                    for (Position p : l) {
-                        System.out.println(String.valueOf(p.getX())+", "+String.valueOf(p.getY()));
-                    }
                 }
                 if (onMove == null){
                     onMove = game.whitePieces.get(new Position(x1,y1));
@@ -70,9 +68,6 @@ public class Main extends Application {
             else if (game.onMove == 'b'){
                 if (game.blackPieces.get(new Position(x1,y1)) != null) {
                     List<Position> l = game.blackPieces.get(new Position(x1,y1)).getPossibleMoves();
-                    for (Position p : l) {
-                        System.out.println(String.valueOf(p.getX())+", "+String.valueOf(p.getY()));
-                    }
                 }
                 if (onMove == null){
                     onMove = game.blackPieces.get(new Position(x1,y1));

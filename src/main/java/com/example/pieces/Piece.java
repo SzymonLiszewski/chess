@@ -1,7 +1,6 @@
-package pieces;
+package com.example.pieces;
 import javafx.scene.image.Image;
 
-import javax.management.monitor.GaugeMonitor;
 import java.util.List;
 
 public abstract class Piece {
@@ -49,6 +48,7 @@ public abstract class Piece {
                 this.game.onMove = 'w';
             }
         }
+        game.checkIfEnd();
     };
 
     public Image getImage() {

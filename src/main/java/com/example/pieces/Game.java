@@ -1,4 +1,4 @@
-package pieces;
+package com.example.pieces;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -6,11 +6,15 @@ import java.util.List;
 import java.util.Map;
 
 import javafx.scene.image.Image;
-import pieces.*;
+import com.example.pieces.*;
+import javafx.scene.image.ImageView;
+
 public class Game {
     public Map<Position, Piece> whitePieces;
     public Map<Position, Piece> blackPieces;
     public char onMove;
+    public boolean isEnd;
+    public char winner;
 
     public Game() {
         whitePieces = new HashMap<>();
@@ -48,5 +52,43 @@ public class Game {
         whitePieces.put(new Position(7,7),new Pawn(new Position(7,7),new Image(getClass().getResource("/images/wP.png").toExternalForm()), this, 'w'));
         whitePieces.put(new Position(8,7),new Pawn(new Position(8,7),new Image(getClass().getResource("/images/wP.png").toExternalForm()), this, 'w'));
         onMove = 'w';
+        isEnd = false;
+    }
+    public void checkIfEnd(){
+        King k;
+        List <Position> kingMoves = new ArrayList<>();
+        if (onMove == 'w'){
+            for (Map.Entry<Position, Piece> element : this.whitePieces.entrySet()){
+                if (element.getValue() instanceof King){
+                    k = (King)element.getValue();
+                    kingMoves = k.getPossibleMoves();
+                }
+            }
+            for (Map.Entry<Position, Piece> element : this.blackPieces.entrySet()){
+                for (Position p : element.getValue().getPossibleMoves()){
+                    kingMoves.removeIf(el -> el.equals(p));
+                }
+            }
+            if (kingMoves.isEmpty()){
+                isEnd = true;
+                System.out.println("mate");
+            }
+        }
+        if (onMove == 'b'){
+            for (Map.Entry<Position, Piece> element : this.blackPieces.entrySet()){
+                if (element.getValue() instanceof King){
+                    k = (King)element.getValue();
+                    kingMoves = k.getPossibleMoves();
+                }
+            }
+            for (Map.Entry<Position, Piece> element : this.whitePieces.entrySet()){
+                for (Position p : element.getValue().getPossibleMoves()){
+                    kingMoves.removeIf(el -> el == p);
+                }
+            }
+            if (kingMoves.isEmpty()){
+                isEnd = true;
+            }
+        }
     }
 }
