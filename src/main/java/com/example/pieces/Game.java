@@ -54,9 +54,59 @@ public class Game {
         onMove = 'w';
         isEnd = false;
     }
+
+    public Game deepCopy() {
+        Game copy = new Game();
+        copy.onMove = this.onMove;
+        copy.winner = this.winner;
+        copy.isEnd = this.isEnd;
+        copy.whitePieces = new HashMap<>();
+        for (Map.Entry<Position, Piece> entry : whitePieces.entrySet()) {
+            copy.whitePieces.put(entry.getKey(), entry.getValue());
+        }
+        copy.blackPieces = new HashMap<>();
+        for (Map.Entry<Position, Piece> entry : blackPieces.entrySet()) {
+            copy.whitePieces.put(entry.getKey(), entry.getValue());
+        }
+        return copy;
+    }
+    public boolean checkIfAttacked(){
+        King k = new King(new Position(5,8),new Image(getClass().getResource("/images/wK.png").toExternalForm()), this, 'w');
+        if (onMove == 'w'){
+            for (Map.Entry<Position, Piece> element : this.whitePieces.entrySet()){
+                if (element.getValue() instanceof King){
+                    k = (King)element.getValue();
+                }
+            }
+            for (Map.Entry<Position, Piece> element : this.blackPieces.entrySet()){
+                for (Position p : element.getValue().getPossibleMoves()){
+                    if (p.equals(k.position)){
+                        return true;
+                    }
+                }
+            }
+        }
+        else if (onMove == 'b'){
+            for (Map.Entry<Position, Piece> element : this.blackPieces.entrySet()){
+                if (element.getValue() instanceof King){
+                    k = (King)element.getValue();
+                }
+            }
+            for (Map.Entry<Position, Piece> element : this.whitePieces.entrySet()){
+                for (Position p : element.getValue().getPossibleMoves()){
+                    if (p.equals(k.position)){
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
+    }
     public void checkIfEnd(){
+        if (checkIfAttacked() == false){return;}
         King k;
         List <Position> kingMoves = new ArrayList<>();
+        Game cp = this.deepCopy();
         if (onMove == 'w'){
             for (Map.Entry<Position, Piece> element : this.whitePieces.entrySet()){
                 if (element.getValue() instanceof King){
@@ -70,6 +120,7 @@ public class Game {
                 }
             }
             if (kingMoves.isEmpty()){
+
                 isEnd = true;
                 System.out.println("mate");
             }

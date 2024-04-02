@@ -19,7 +19,6 @@ public class Main extends Application {
 
     @Override
     public void start(Stage stage) {
-        System.out.println("Hello XD");
         Game game = new Game();
         String imageUrl = getClass().getResource("/images/wood2.jpg").toExternalForm();
         drawBoard(game, stage, imageUrl);
@@ -97,7 +96,6 @@ public class Main extends Application {
         stage.show();
     }
     public static void main(String[] args) {
-        System.out.println("World XDD");
         launch();
     }
 
