@@ -30,7 +30,6 @@ public abstract class Piece {
         }
         if (isPossible){
             if (this.game.onMove == 'w'){
-                System.out.println("test");
                 game.whitePieces.remove(this.position);
                 if (game.blackPieces.get(position)!=null){game.blackPieces.remove(position);}
                 this.position.X = position.getX();
@@ -39,7 +38,6 @@ public abstract class Piece {
                 this.game.onMove = 'b';
             }
             else if (this.game.onMove == 'b'){
-                System.out.println("test");
                 game.blackPieces.remove(this.position);
                 if (game.whitePieces.get(position)!=null){game.whitePieces.remove(position);}
                 this.position.X = position.getX();
@@ -47,6 +45,7 @@ public abstract class Piece {
                 game.blackPieces.put(position,this);
                 this.game.onMove = 'w';
             }
+            if(this instanceof Pawn){((Pawn) this).isFirstMove = false;}
         }
         game.checkIfEnd();
     };

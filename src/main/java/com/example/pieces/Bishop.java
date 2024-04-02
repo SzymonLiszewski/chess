@@ -32,14 +32,14 @@ public class Bishop extends Piece{
         while (x>1 && y>1){
             x-=1;
             y-=1;
-            if (this.game.whitePieces.get(new Position(x,y))!=null){
-                if (this.color == 'b'){moves.add(new Position(x,y));}
-                break;
-            }
-            if (this.game.blackPieces.get(new Position(x,y))!=null){
-                if (this.color == 'w'){moves.add(new Position(x,y));}
-                break;
-            }
+                if (this.game.whitePieces.get(new Position(x,y))!=null){
+                    if (this.color == 'b'){moves.add(new Position(x,y));}
+                    break;
+                }
+                if (this.game.blackPieces.get(new Position(x,y))!=null){
+                    if (this.color == 'w'){moves.add(new Position(x,y));}
+                    break;
+                }
             moves.add(new Position(x,y));
         }
         x = this.position.X;

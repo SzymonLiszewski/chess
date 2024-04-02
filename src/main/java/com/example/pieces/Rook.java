@@ -17,24 +17,56 @@ public class Rook extends Piece{
         List<Position> moves = new ArrayList<>();
         while (x<8){
             x+=1;
+            if (this.game.whitePieces.get(new Position(x,y))!=null){
+                if (this.color == 'b'){moves.add(new Position(x,y));}
+                break;
+            }
+            if (this.game.blackPieces.get(new Position(x,y))!=null){
+                if (this.color == 'w'){moves.add(new Position(x,y));}
+                break;
+            }
             moves.add(new Position(x,y));
         }
         x = this.position.X;
         y = this.position.Y;
         while (x>1){
             x-=1;
+            if (this.game.whitePieces.get(new Position(x,y))!=null){
+                if (this.color == 'b'){moves.add(new Position(x,y));}
+                break;
+            }
+            if (this.game.blackPieces.get(new Position(x,y))!=null){
+                if (this.color == 'w'){moves.add(new Position(x,y));}
+                break;
+            }
             moves.add(new Position(x,y));
         }
         x = this.position.X;
         y = this.position.Y;
         while (y<8){
             y+=1;
+            if (this.game.whitePieces.get(new Position(x,y))!=null){
+                if (this.color == 'b'){moves.add(new Position(x,y));}
+                break;
+            }
+            if (this.game.blackPieces.get(new Position(x,y))!=null){
+                if (this.color == 'w'){moves.add(new Position(x,y));}
+                break;
+            }
             moves.add(new Position(x,y));
         }
         x = this.position.X;
         y = this.position.Y;
         while (y>1){
             y-=1;
+            if (this.game.whitePieces.get(new Position(x,y))!=null){
+                if (this.color == 'b'){moves.add(new Position(x,y));}
+                break;
+            }
+            if (this.game.blackPieces.get(new Position(x,y))!=null){
+                if (this.color == 'w'){moves.add(new Position(x,y));}
+                break;
+            }
             moves.add(new Position(x,y));
         }
         return moves;
