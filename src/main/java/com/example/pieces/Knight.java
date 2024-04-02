@@ -6,7 +6,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Knight extends Piece{
-    public Knight(Position position, Image image, Game game, char color) {
+    public Knight(Position position, String image, Game game, char color) {
         super(position, image, game, color);
     }
 

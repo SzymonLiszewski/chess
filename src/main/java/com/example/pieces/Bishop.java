@@ -5,7 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Bishop extends Piece{
-    public Bishop(Position position, Image image, Game game, char color) {
+    public Bishop(Position position, String image, Game game, char color) {
         super(position, image, game, color);
     }
 

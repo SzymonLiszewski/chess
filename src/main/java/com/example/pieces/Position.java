@@ -1,8 +1,9 @@
 package com.example.pieces;
 
+import java.io.Serializable;
 import java.util.Objects;
 
-public class Position {
+public class Position implements Serializable {
     int X;
     int Y;
 

@@ -30,10 +30,10 @@ public class Main extends Application {
         //adding views of chess pieces
         Map<Position,ImageView> views = new HashMap<>();
         for (Map.Entry<Position, Piece> element : game.whitePieces.entrySet()){
-            views.put(element.getKey(),new ImageView(element.getValue().getImage()));
+            views.put(element.getKey(),new ImageView(new Image(element.getValue().getImage())));
         }
         for (Map.Entry<Position, Piece> element : game.blackPieces.entrySet()){
-            views.put(element.getKey(),new ImageView(element.getValue().getImage()));
+            views.put(element.getKey(),new ImageView(new Image(element.getValue().getImage())));
         }
         //setting pieces display position
         for (Map.Entry<Position, ImageView> element : views.entrySet()){
@@ -58,7 +58,7 @@ public class Main extends Application {
                     //System.out.println(onMove.getImage());
                 }
                 else{
-                    onMove.Move(new Position(x1, y1));
+                    onMove.Move(new Position(x1, y1), true);
                     //System.out.println("nowa poz: "+String.valueOf(game.pieces.get(new Position(x1,y1)).getPosition().getX())+", "+String.valueOf(game.pieces.get(new Position(x1,y1)).getPosition().getY()));
                     drawBoard(game, stage, imageUrl);
                     onMove = null;
@@ -73,7 +73,7 @@ public class Main extends Application {
                     //System.out.println(onMove.getImage());
                 }
                 else{
-                    onMove.Move(new Position(x1, y1));
+                    onMove.Move(new Position(x1, y1), true);
                     //System.out.println("nowa poz: "+String.valueOf(game.pieces.get(new Position(x1,y1)).getPosition().getX())+", "+String.valueOf(game.pieces.get(new Position(x1,y1)).getPosition().getY()));
                     drawBoard(game, stage, imageUrl);
                     onMove = null;

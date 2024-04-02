@@ -1,16 +1,17 @@
 package com.example.pieces;
 import javafx.scene.image.Image;
 
+import java.io.Serializable;
 import java.util.List;
 
-public abstract class Piece {
+public abstract class Piece implements Serializable {
     Position position;
-    Image image;
+    String image;
     Game game;
     char color;
     public abstract List<Position> getPossibleMoves();
 
-    public Piece(Position position, Image image, Game game, char color) {
+    public Piece(Position position, String image, Game game, char color) {
         this.position = position;
         this.image = image;
         this.game = game;
@@ -20,7 +21,7 @@ public abstract class Piece {
     public Position getPosition() {
         return position;
     }
-    public void Move(Position position){
+    public void Move(Position position, Boolean check){
         Boolean isPossible = false;
         for (Position p : this.getPossibleMoves()){
             if (position.getX() == p.getX() && position.getY() == p.getY()){
@@ -47,10 +48,10 @@ public abstract class Piece {
             }
             if(this instanceof Pawn){((Pawn) this).isFirstMove = false;}
         }
-        game.checkIfEnd();
+        if (check){game.checkIfEnd();}
     };
 
-    public Image getImage() {
+    public String getImage() {
         return image;
     }
 }
