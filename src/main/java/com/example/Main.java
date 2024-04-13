@@ -4,6 +4,7 @@ import javafx.application.Application;
 import javafx.scene.Scene;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.StackPane;
 import javafx.stage.Stage;
 import com.example.pieces.Game;
@@ -13,6 +14,7 @@ import com.example.pieces.Position;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 public class Main extends Application {
     public static Piece onMove = null;
@@ -21,10 +23,18 @@ public class Main extends Application {
     public void start(Stage stage) {
         Game game = new Game();
         String imageUrl = getClass().getResource("/images/wood2.jpg").toExternalForm();
-        drawBoard(game, stage, imageUrl);
+        Parameters params = getParameters();
+        MinMaxAgent bot = new MinMaxAgent(game, 'w');
+        drawBoard(game, stage, imageUrl, params.getRaw().toArray(new String[0]), bot);
     }
 
-    public static void drawBoard(Game game, Stage stage, String imageUrl){
+    public static void drawBoard(Game game, Stage stage, String imageUrl, String[] params, MinMaxAgent bot){
+        if (game.onMove == 'w') {
+            if (params.length > 0 && Objects.equals(params[0], "--pva")) {
+                bot.makeMove();
+                drawBoard(game, stage, imageUrl, params, bot);
+            }
+        }
         ImageView imageView = new ImageView(new Image(imageUrl));
 
         //adding views of chess pieces
@@ -44,43 +54,7 @@ public class Main extends Application {
         StackPane root = new StackPane();
         root.getChildren().add(imageView);
 
-        root.setOnMouseClicked(event -> {
-            double mouseX = event.getSceneX();
-            double mouseY = event.getSceneY();
-            int x1 = (int)((mouseX)/100+1);
-            int y1 = (int)(-(mouseY)/100+9);
-            if (game.onMove == 'w'){
-                if (game.whitePieces.get(new Position(x1,y1)) != null) {
-                    List<Position> l = game.whitePieces.get(new Position(x1,y1)).getPossibleMoves();
-                }
-                if (onMove == null){
-                    onMove = game.whitePieces.get(new Position(x1,y1));
-                    //System.out.println(onMove.getImage());
-                }
-                else{
-                    onMove.Move(new Position(x1, y1), true);
-                    //System.out.println("nowa poz: "+String.valueOf(game.pieces.get(new Position(x1,y1)).getPosition().getX())+", "+String.valueOf(game.pieces.get(new Position(x1,y1)).getPosition().getY()));
-                    drawBoard(game, stage, imageUrl);
-                    onMove = null;
-                }
-            }
-            else if (game.onMove == 'b'){
-                if (game.blackPieces.get(new Position(x1,y1)) != null) {
-                    List<Position> l = game.blackPieces.get(new Position(x1,y1)).getPossibleMoves();
-                }
-                if (onMove == null){
-                    onMove = game.blackPieces.get(new Position(x1,y1));
-                    //System.out.println(onMove.getImage());
-                }
-                else{
-                    onMove.Move(new Position(x1, y1), true);
-                    //System.out.println("nowa poz: "+String.valueOf(game.pieces.get(new Position(x1,y1)).getPosition().getX())+", "+String.valueOf(game.pieces.get(new Position(x1,y1)).getPosition().getY()));
-                    drawBoard(game, stage, imageUrl);
-                    onMove = null;
-                }
-            }
-
-        });
+        root.setOnMouseClicked(event -> handleInteractions(game, event, stage, imageUrl, params, bot));
 
 
         for (ImageView view : views.values()){
@@ -95,8 +69,51 @@ public class Main extends Application {
         stage.setScene(scene);
         stage.show();
     }
+
+    public static void handleInteractions(Game game, MouseEvent event, Stage stage, String imageUrl, String[] params, MinMaxAgent bot){
+            double mouseX = event.getSceneX();
+            double mouseY = event.getSceneY();
+            int x1 = (int)((mouseX)/100+1);
+            int y1 = (int)(-(mouseY)/100+9);
+            if (game.onMove == 'w'){
+                if (params.length>0 && Objects.equals(params[0], "--pva")){
+                    //bot.makeMove();
+                    //drawBoard(game, stage, imageUrl, params, bot);
+                }
+                else{
+                    if (game.whitePieces.get(new Position(x1,y1)) != null) {
+                        List<Position> l = game.whitePieces.get(new Position(x1,y1)).getPossibleMoves();
+                    }
+                    if (onMove == null){
+                        onMove = game.whitePieces.get(new Position(x1,y1));
+                        //System.out.println(onMove.getImage());
+                    }
+                    else{
+                        onMove.Move(new Position(x1, y1), true);
+                        //System.out.println("nowa poz: "+String.valueOf(game.pieces.get(new Position(x1,y1)).getPosition().getX())+", "+String.valueOf(game.pieces.get(new Position(x1,y1)).getPosition().getY()));
+                        drawBoard(game, stage, imageUrl, params, bot);
+                        onMove = null;
+                    }
+                }
+            }
+            else if (game.onMove == 'b'){
+                if (game.blackPieces.get(new Position(x1,y1)) != null) {
+                    List<Position> l = game.blackPieces.get(new Position(x1,y1)).getPossibleMoves();
+                }
+                if (onMove == null){
+                    onMove = game.blackPieces.get(new Position(x1,y1));
+                    //System.out.println(onMove.getImage());
+                }
+                else{
+                    onMove.Move(new Position(x1, y1), true);
+                    //System.out.println("nowa poz: "+String.valueOf(game.pieces.get(new Position(x1,y1)).getPosition().getX())+", "+String.valueOf(game.pieces.get(new Position(x1,y1)).getPosition().getY()));
+                    drawBoard(game, stage, imageUrl, params, bot);
+                    onMove = null;
+                }
+            }
+    }
     public static void main(String[] args) {
-        launch();
+        launch(args);
     }
 
 }
