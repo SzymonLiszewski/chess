@@ -24,6 +24,10 @@ public class Main extends Application {
         Game game = new Game();
         String imageUrl = getClass().getResource("/images/wood2.jpg").toExternalForm();
         Parameters params = getParameters();
+        String sParams[] = params.getRaw().toArray(new String[0]);
+        if (sParams.length > 0 && Objects.equals(sParams[0], "--fen")) {
+            game.readFen("r2k1r2/p3b2p/2Q5/1pN5/P7/4pP1q/1P2KP2/8 w - - 1 27");
+        }
         MinMaxAgent bot = new MinMaxAgent(game, 'w');
         drawBoard(game, stage, imageUrl, params.getRaw().toArray(new String[0]), bot);
     }
@@ -31,7 +35,7 @@ public class Main extends Application {
     public static void drawBoard(Game game, Stage stage, String imageUrl, String[] params, MinMaxAgent bot){
         if (game.onMove == 'w') {
             if (params.length > 0 && Objects.equals(params[0], "--pva")) {
-                bot.makeMove();
+                bot.makeMove(8);
                 drawBoard(game, stage, imageUrl, params, bot);
             }
         }

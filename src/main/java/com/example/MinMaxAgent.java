@@ -1,8 +1,7 @@
 package com.example;
 
-import com.example.pieces.Game;
-import com.example.pieces.Piece;
-import com.example.pieces.Position;
+import com.example.pieces.*;
+import javafx.geometry.Pos;
 import org.apache.commons.lang3.SerializationUtils;
 
 import java.util.*;
@@ -16,6 +15,63 @@ public class MinMaxAgent {
         this.color = color;
     }
 
+
+    public double heuristic(){
+        int whiteKing = 0;
+        int whiteKnight = 0;
+        int whiteRook = 0;
+        int whiteBishop = 0;
+        int whiteQueen = 0;
+        int whitePawn = 0;
+        for (Map.Entry<Position,Piece> entry : game.whitePieces.entrySet()){
+            if (entry.getValue() instanceof King){
+                whiteKing++;
+            }
+            else if (entry.getValue() instanceof Knight){
+                whiteKnight++;
+            }
+            else if (entry.getValue() instanceof Rook){
+                whiteRook++;
+            }
+            else if (entry.getValue() instanceof Bishop){
+                whiteBishop++;
+            }
+            else if (entry.getValue() instanceof Queen){
+                whiteQueen++;
+            }
+            else if (entry.getValue() instanceof Pawn){
+                whitePawn++;
+            }
+        }
+        int blackKing = 0;
+        int blackKnight = 0;
+        int blackRook = 0;
+        int blackBishop = 0;
+        int blackQueen = 0;
+        int blackPawn = 0;
+        for (Map.Entry<Position,Piece> entry : game.blackPieces.entrySet()){
+            if (entry.getValue() instanceof King){
+                blackKing++;
+            }
+            else if (entry.getValue() instanceof Knight){
+                blackKnight++;
+            }
+            else if (entry.getValue() instanceof Rook){
+                blackRook++;
+            }
+            else if (entry.getValue() instanceof Bishop){
+                blackBishop++;
+            }
+            else if (entry.getValue() instanceof Queen){
+                blackQueen++;
+            }
+            else if (entry.getValue() instanceof Pawn){
+                blackPawn++;
+            }
+        }
+        double eval = 9 * (whiteQueen - blackQueen) + 5 * (whiteRook - blackRook) + 3 * (whiteBishop - blackBishop + whiteKnight - blackKnight) + 1 * (whitePawn - blackPawn);
+        return eval;
+    }
     public double decide(Game state, int flag, int depth, double alpha, double beta){
         if (state.isEnd && state.winner == color){
              return 1;
@@ -24,7 +80,7 @@ public class MinMaxAgent {
             return -1;
         }
         else if (depth == 0){
-            return 0;
+            return heuristic();
         }
         else if (flag == 1){
             double v = Double.NEGATIVE_INFINITY;
@@ -48,7 +104,7 @@ public class MinMaxAgent {
             }
 
         }
-        else{ //testing
+        else{
             double v = Double.POSITIVE_INFINITY;
             List<Double> l = new ArrayList<>();
             Game cp = (Game) SerializationUtils.clone(state);
@@ -73,14 +129,21 @@ public class MinMaxAgent {
         return 0;
     }
 
-    public void makeMove(){
+    public void makeMove(int depth){
         //List<Double> values = new ArrayList<>();
         //Map<Piece, Position> moves = new HashMap<>();
         Map<Move, Double> moveValue = new HashMap<>();
-
-        for (Piece p : game.whitePieces.values()){
+        //test of deepcopy
+        Game cp = (Game) SerializationUtils.clone(game);
+        Game temp = (Game) SerializationUtils.clone(cp);
+        Set<Map.Entry<Position, Piece>> es = temp.whitePieces.entrySet();
+        for (Map.Entry<Position, Piece> element : es){
+            Piece p = element.getValue();
             for (Position pos : p.getPossibleMoves()){
-                double val = decide(game, 1, 2, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
+                cp.whitePieces.get(p.getPosition()).Move(pos,true);
+                //p.Move(pos, true);
+                double val = decide(cp, 1, depth, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
+                cp = (Game) SerializationUtils.clone(temp);
                 moveValue.put(new Move(p, pos), val);
             }
         }
@@ -89,8 +152,11 @@ public class MinMaxAgent {
         for (Map.Entry<Move, Double> element : moveValue.entrySet()){
             if (element.getValue()>max){
                 maxMove = element.getKey();
+                max = element.getValue();
             }
         }
+        Position xd = maxMove.getPiece().getPosition();
+        Position xd2 = maxMove.getPosition();
         game.whitePieces.get(maxMove.getPiece().getPosition()).Move(maxMove.getPosition(), true);
     }
 

@@ -106,7 +106,7 @@ public class Game implements Serializable {
                     kingMoves.removeIf(el -> el.equals(p));
                 }
             }
-            if (kingMoves.isEmpty()){
+            if (true){ //previously if kingmoves==0
                 for (Map.Entry<Position, Piece> element : this.whitePieces.entrySet()){
                     for (Position p : element.getValue().getPossibleMoves()){
                         cp.whitePieces.get(element.getKey()).Move(p, false);
@@ -117,6 +117,7 @@ public class Game implements Serializable {
                     }
                 }
                 isEnd = true;
+                winner = 'b';
                 System.out.println("mate");
             }
             else{
@@ -131,6 +132,7 @@ public class Game implements Serializable {
                 }
                 if (size == 0) {
                     isEnd = true;
+                    winner = 'b';
                     System.out.println("mate");
                 }
             }
@@ -147,7 +149,7 @@ public class Game implements Serializable {
                     kingMoves.removeIf(el -> el.equals(p));
                 }
             }
-            if (kingMoves.isEmpty()){
+            if (true){
                 for (Map.Entry<Position, Piece> element : this.blackPieces.entrySet()){
                     for (Position p : element.getValue().getPossibleMoves()){
                         cp.blackPieces.get(element.getKey()).Move(p, false);
@@ -158,6 +160,7 @@ public class Game implements Serializable {
                     }
                 }
                 isEnd = true;
+                winner = 'w';
                 System.out.println("mate");
             }
             else{
@@ -172,9 +175,113 @@ public class Game implements Serializable {
                 }
                 if (size == 0) {
                     isEnd = true;
+                    winner = 'w';
                     System.out.println("mate");
                 }
             }
         }
     }
+    public void readFen(String fen){
+        int x = 1;
+        int y = 8;
+        this.whitePieces.clear();
+        this.blackPieces.clear();
+        for (int i=0;i<fen.length();i++){
+            char currentChar = fen.charAt(i);
+            if (currentChar == 'r'){
+                this.blackPieces.put(new Position(x,y),new Rook(new Position(x,y), getClass().getResource("/images/bR.png").toExternalForm(), this, 'b'));
+            }
+            else if (currentChar == 'n'){
+                this.blackPieces.put(new Position(x,y),new Knight(new Position(x,y), getClass().getResource("/images/bN.png").toExternalForm(), this, 'b'));
+            }
+            else if (currentChar == 'b'){
+                this.blackPieces.put(new Position(x,y),new Bishop(new Position(x,y), getClass().getResource("/images/bB.png").toExternalForm(), this, 'b'));
+            }
+            else if (currentChar == 'q'){
+                this.blackPieces.put(new Position(x,y),new Queen(new Position(x,y), getClass().getResource("/images/bQ.png").toExternalForm(), this, 'b'));
+            }
+            else if (currentChar == 'k'){
+                this.blackPieces.put(new Position(x,y),new King(new Position(x,y), getClass().getResource("/images/bK.png").toExternalForm(), this, 'b'));
+            }
+            else if (currentChar == 'p'){
+                this.blackPieces.put(new Position(x,y),new Pawn(new Position(x,y), getClass().getResource("/images/bP.png").toExternalForm(), this, 'b'));
+            }
+            else if (currentChar == 'R'){
+                this.whitePieces.put(new Position(x,y),new Rook(new Position(x,y), getClass().getResource("/images/wR.png").toExternalForm(), this, 'w'));
+            }
+            else if (currentChar == 'N'){
+                this.whitePieces.put(new Position(x,y),new Knight(new Position(x,y), getClass().getResource("/images/wN.png").toExternalForm(), this, 'w'));
+            }
+            else if (currentChar == 'B'){
+                this.whitePieces.put(new Position(x,y),new Bishop(new Position(x,y), getClass().getResource("/images/wB.png").toExternalForm(), this, 'w'));
+            }
+            else if (currentChar == 'Q'){
+                this.whitePieces.put(new Position(x,y),new Queen(new Position(x,y), getClass().getResource("/images/wQ.png").toExternalForm(), this, 'w'));
+            }
+            else if (currentChar == 'K'){
+                this.whitePieces.put(new Position(x,y),new King(new Position(x,y), getClass().getResource("/images/wK.png").toExternalForm(), this, 'w'));
+            }
+            else if (currentChar == 'P'){
+                this.whitePieces.put(new Position(x,y),new Pawn(new Position(x,y), getClass().getResource("/images/wP.png").toExternalForm(), this, 'w'));
+            }
+            else if (currentChar>='1' && currentChar<='8'){
+                x+=currentChar-'0'-1;
+            }
+            if (currentChar != '/'){
+                x+=1;
+                if (x>8){
+                    x=1;
+                    y-=1;
+                }
+            }
+            if(currentChar == ' '){
+                i++;
+                currentChar = fen.charAt(i);
+                    if (currentChar == 'w'){
+                        onMove = 'w';
+                    }
+                    else if (currentChar == 'b'){
+                        onMove = 'b';
+                    }
+                    i+=2;
+                    currentChar = fen.charAt(i);
+                    if (currentChar == '-'){
+                        i+=2;
+                        currentChar = fen.charAt(i);
+                    }
+                    else{
+                        while (currentChar != ' '){
+                            if (currentChar == 'K'){
+
+                            }
+                            else if (currentChar == 'Q'){
+
+                            }
+                            else if (currentChar == 'k'){
+
+                            }
+                            else if (currentChar == 'q'){
+
+                            }
+                            i++;
+                            currentChar = fen.charAt(i);
+                        }
+                    }
+                    i++;
+                    currentChar = fen.charAt(i);
+                    int halfMove = currentChar-'0';
+                    i+=2;
+                    currentChar = fen.charAt(i);
+                    int moves = currentChar-'0';
+                    i++;
+                    if (i<fen.length()){
+                        currentChar = fen.charAt(i);
+                        moves=moves*10;
+                        moves+=currentChar-'0';
+                    }
+
+            }
+        }
+    }
+
 }
