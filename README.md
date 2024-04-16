@@ -21,25 +21,25 @@ The project is a simple chess engine written in Java using the Minimax algorithm
 ```
 git clone https://github.com/SzymonLiszewski/chess.git
 ```
-2.Compilation
-```
-cd chess
-javac Main.java
-```
-2.Execution
+
+2. Run
 * Player vs Player (PvP) mode:
 ```
-java Main -pvp
+cd \chess\out\artifacts\chess_jar
+java -jar chess.jar "--pvp"
 ```
 * Player vs AI (PvA) mode:
 ```
-java Main -pva
+cd \chess\out\artifacts\chess_jar
+java -jar chess.jar "--pva"
 ```
 * Load an initial game state using FEN notation:
 ```
-java Main -fen [fen_string]
+cd \chess\out\artifacts\chess_jar
+java -jar chess.jar "--fen"
 ```
 
 ## Future Planned Features
 * improved heuristic
 * Improve the graphical interface: Add additional features and enhancements to the user interface.
+* Implementation of Chess Engine Communication Protocol or Universal Chess Interface
