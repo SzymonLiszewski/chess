@@ -4,6 +4,7 @@ import javafx.scene.image.Image;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 public class King extends Piece{
     public King(Position position, String image, Game game, char color) {
@@ -56,6 +57,11 @@ public class King extends Piece{
                     moves.add(new Position(x+1, y-1));
                 }
             }
+            /*for (Map.Entry<Position, Piece> element : game.blackPieces.entrySet()){
+                for (Position p : element.getValue().getPossibleMoves()){
+                    moves.removeIf(el -> el.equals(p));
+                }
+            }*/
         }
         else if (this.color == 'b'){
             if (x+1<=8){
@@ -98,6 +104,11 @@ public class King extends Piece{
                     moves.add(new Position(x+1, y-1));
                 }
             }
+            /*(for (Map.Entry<Position, Piece> element : game.whitePieces.entrySet()){
+                for (Position p : element.getValue().getPossibleMoves()){
+                    moves.removeIf(el -> el.equals(p));
+                }
+            }*/
         }
 
         return moves;

@@ -19,12 +19,12 @@ public class Pawn extends Piece{
         List<Position> moves = new ArrayList<>();
         if (isFirstMove){
             if (this.color == 'w'){
-                if (this.game.whitePieces.get(new Position(x,y+2))==null && this.game.blackPieces.get(new Position(x,y+2))==null){
+                if (this.game.whitePieces.get(new Position(x,y+2))==null && this.game.blackPieces.get(new Position(x,y+2))==null && this.game.blackPieces.get(new Position(x,y+1))==null){
                     moves.add(new Position(x,y+2));
                 }
             }
             if (this.color == 'b'){
-                if (this.game.whitePieces.get(new Position(x,y-2))==null && this.game.blackPieces.get(new Position(x,y-2))==null){
+                if (this.game.whitePieces.get(new Position(x,y-2))==null && this.game.blackPieces.get(new Position(x,y-2))==null && this.game.whitePieces.get(new Position(x,y-1))==null){
                     moves.add(new Position(x,y-2));
                 }
             }

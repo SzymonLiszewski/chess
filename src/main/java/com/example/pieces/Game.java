@@ -109,6 +109,7 @@ public class Game implements Serializable {
             if (true){ //previously if kingmoves==0
                 for (Map.Entry<Position, Piece> element : this.whitePieces.entrySet()){
                     for (Position p : element.getValue().getPossibleMoves()){
+                        cp = (Game) SerializationUtils.clone(this);
                         cp.whitePieces.get(element.getKey()).Move(p, false);
                         cp.onMove = 'w';
                         if (cp.checkIfAttacked() == false){
@@ -152,6 +153,7 @@ public class Game implements Serializable {
             if (true){
                 for (Map.Entry<Position, Piece> element : this.blackPieces.entrySet()){
                     for (Position p : element.getValue().getPossibleMoves()){
+                        cp = (Game) SerializationUtils.clone(this);
                         cp.blackPieces.get(element.getKey()).Move(p, false);
                         cp.onMove = 'b';
                         if (cp.checkIfAttacked() == false){

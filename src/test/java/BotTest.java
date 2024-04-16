@@ -42,10 +42,21 @@ public class BotTest {
     public void mateInOne3(){
         Game game = new Game();
         MinMaxAgent agent = new MinMaxAgent(game, 'w');
-        game.readFen("rn2Qbk1/pp3p1p/2p3p1/8/3PBnq1/2P5/PP1N1PPP/R1B2K1R w - - 1 19");
+        game.readFen("3qkbnr/R3p3/7p/1r4p1/4p3/2P5/5PPP/3QK1NR w Kk - 0 19");
         Map<Position, Piece> prev = new HashMap<>(game.whitePieces);
         agent.makeMove(2);
-        assertTrue(game.whitePieces.get(new Position(5,8)) instanceof Queen);
+        assertTrue(game.whitePieces.get(new Position(8,5)) instanceof Queen);
+    }
+    @Test
+    public void mateInTwo(){
+        Game game = new Game();
+        MinMaxAgent agent = new MinMaxAgent(game, 'w');
+        game.readFen("5r1k/5Rpp/rq2n2N/3pP1Q1/8/1p6/1PP3PP/2KR4 w - - 0 26");
+        Map<Position, Piece> prev = new HashMap<>(game.whitePieces);
+        agent.makeMove(2);
+        Map<Position, Piece> next = new HashMap<>(game.whitePieces);
+        assertNotEquals(prev, next);
+        //assertTrue(game.whitePieces.get(new Position(7,7)) instanceof Queen);
     }
 
 }

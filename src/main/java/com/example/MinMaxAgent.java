@@ -16,14 +16,14 @@ public class MinMaxAgent {
     }
 
 
-    public double heuristic(){
+    public double heuristic(Game state){
         int whiteKing = 0;
         int whiteKnight = 0;
         int whiteRook = 0;
         int whiteBishop = 0;
         int whiteQueen = 0;
         int whitePawn = 0;
-        for (Map.Entry<Position,Piece> entry : game.whitePieces.entrySet()){
+        for (Map.Entry<Position,Piece> entry : state.whitePieces.entrySet()){
             if (entry.getValue() instanceof King){
                 whiteKing++;
             }
@@ -49,7 +49,7 @@ public class MinMaxAgent {
         int blackBishop = 0;
         int blackQueen = 0;
         int blackPawn = 0;
-        for (Map.Entry<Position,Piece> entry : game.blackPieces.entrySet()){
+        for (Map.Entry<Position,Piece> entry : state.blackPieces.entrySet()){
             if (entry.getValue() instanceof King){
                 blackKing++;
             }
@@ -70,7 +70,7 @@ public class MinMaxAgent {
             }
         }
         double eval = 9 * (whiteQueen - blackQueen) + 5 * (whiteRook - blackRook) + 3 * (whiteBishop - blackBishop + whiteKnight - blackKnight) + 1 * (whitePawn - blackPawn);
-        return eval;
+        return eval/100;
     }
     public double decide(Game state, int flag, int depth, double alpha, double beta){
         if (state.isEnd && state.winner == color){
@@ -80,7 +80,7 @@ public class MinMaxAgent {
             return -1;
         }
         else if (depth == 0){
-            return heuristic();
+            return heuristic(state);
         }
         else if (flag == 1){
             double v = Double.NEGATIVE_INFINITY;
@@ -89,44 +89,45 @@ public class MinMaxAgent {
             Game temp = (Game) SerializationUtils.clone(cp);
             Set<Map.Entry<Position, Piece>> es = temp.whitePieces.entrySet();
             for (Map.Entry<Position, Piece> element : es){
-                cp = (Game) SerializationUtils.clone(state);
+                temp = (Game) SerializationUtils.clone(state);
                 List<Position> positions = element.getValue().getPossibleMoves();
                 for (Position p : positions){
-                    element.getValue().Move(p,true);
-                    l.add(decide(cp, -1, depth-1, alpha, beta));
+                    //element.getValue().Move(p,true);
+                    temp = (Game) SerializationUtils.clone(state);
+                    temp.whitePieces.get(element.getKey()).Move(p,true);
+                    l.add(decide(temp, -1, depth-1, alpha, beta));
                     v = Math.max(v, Collections.max(l));
                     alpha = Math.max(v, alpha);
                     if (v>=beta){
                         break;
                     }
-                    return v;
                 }
             }
-
+            return v;
         }
         else{
             double v = Double.POSITIVE_INFINITY;
             List<Double> l = new ArrayList<>();
             Game cp = (Game) SerializationUtils.clone(state);
             Game temp = (Game) SerializationUtils.clone(cp);
-            Set<Map.Entry<Position, Piece>> es = temp.whitePieces.entrySet();
+            Set<Map.Entry<Position, Piece>> es = temp.blackPieces.entrySet();
             for (Map.Entry<Position, Piece> element : es){
-                cp = (Game) SerializationUtils.clone(state);
+                temp = (Game) SerializationUtils.clone(state);
                 List<Position> positions = element.getValue().getPossibleMoves();
                 for (Position p : positions){
-                    element.getValue().Move(p,true);
-                    l.add(decide(cp, -1, depth-1, alpha, beta));
+                    temp = (Game) SerializationUtils.clone(state);
+                    temp.blackPieces.get(element.getKey()).Move(p,true);
+                    l.add(decide(temp, 1, depth-1, alpha, beta));
                     v = Math.min(v, Collections.max(l));
                     beta = Math.min(v, beta);
                     if (v<=alpha){
                         break;
                     }
-                    return v;
                 }
             }
-
+            return v;
         }
-        return 0;
+        //return 0;
     }
 
     public void makeMove(int depth){
@@ -142,7 +143,7 @@ public class MinMaxAgent {
             for (Position pos : p.getPossibleMoves()){
                 cp.whitePieces.get(p.getPosition()).Move(pos,true);
                 //p.Move(pos, true);
-                double val = decide(cp, 1, depth, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
+                double val = decide(cp, -1, depth, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
                 cp = (Game) SerializationUtils.clone(temp);
                 moveValue.put(new Move(p, pos), val);
             }
@@ -158,6 +159,7 @@ public class MinMaxAgent {
         Position xd = maxMove.getPiece().getPosition();
         Position xd2 = maxMove.getPosition();
         game.whitePieces.get(maxMove.getPiece().getPosition()).Move(maxMove.getPosition(), true);
+        System.out.println(max);
     }
 
 }
