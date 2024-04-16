@@ -118,7 +118,7 @@ public class MinMaxAgent {
                     temp = (Game) SerializationUtils.clone(state);
                     temp.blackPieces.get(element.getKey()).Move(p,true);
                     l.add(decide(temp, 1, depth-1, alpha, beta));
-                    v = Math.min(v, Collections.max(l));
+                    v = Math.min(v, Collections.min(l));
                     beta = Math.min(v, beta);
                     if (v<=alpha){
                         break;
@@ -155,11 +155,17 @@ public class MinMaxAgent {
                 maxMove = element.getKey();
                 max = element.getValue();
             }
+            System.out.print(element.getKey().getPiece().getClass().getName());
+            System.out.print(" ");
+            System.out.print(element.getKey().getPosition().getX());
+            System.out.print(element.getKey().getPosition().getY());
+            System.out.print(" : ");
+            System.out.println(element.getValue());
         }
         Position xd = maxMove.getPiece().getPosition();
         Position xd2 = maxMove.getPosition();
         game.whitePieces.get(maxMove.getPiece().getPosition()).Move(maxMove.getPosition(), true);
-        System.out.println(max);
+        //System.out.println(max);
     }
 
 }
