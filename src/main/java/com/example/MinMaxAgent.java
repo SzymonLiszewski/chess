@@ -95,12 +95,15 @@ public class MinMaxAgent {
                     //element.getValue().Move(p,true);
                     temp = (Game) SerializationUtils.clone(state);
                     temp.whitePieces.get(element.getKey()).Move(p,true);
-                    l.add(decide(temp, -1, depth-1, alpha, beta));
-                    v = Math.max(v, Collections.max(l));
-                    alpha = Math.max(v, alpha);
-                    if (v>=beta){
-                        break;
+                    if (temp.onMove != this.color) {
+                        l.add(decide(temp, -1, depth-1, alpha, beta));
+                        v = Math.max(v, Collections.max(l));
+                        alpha = Math.max(v, alpha);
+                        if (v>=beta){
+                            break;
+                        }
                     }
+
                 }
             }
             return v;
@@ -116,13 +119,17 @@ public class MinMaxAgent {
                 List<Position> positions = element.getValue().getPossibleMoves();
                 for (Position p : positions){
                     temp = (Game) SerializationUtils.clone(state);
-                    temp.blackPieces.get(element.getKey()).Move(p,true);
-                    l.add(decide(temp, 1, depth-1, alpha, beta));
-                    v = Math.min(v, Collections.min(l));
-                    beta = Math.min(v, beta);
-                    if (v<=alpha){
-                        break;
+                    temp.blackPieces.get(element.getValue().getPosition()).Move(p,true);
+                    if (temp.onMove == this.color) {
+                        l.add(decide(temp, 1, depth-1, alpha, beta));
+                        v = Math.min(v, Collections.min(l));
+                        beta = Math.min(v, beta);
+                        if (v<=alpha){
+                            break;
+                        }
                     }
+
+
                 }
             }
             return v;

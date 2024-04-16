@@ -56,6 +56,7 @@ public class BotTest {
         agent.makeMove(2);
         Map<Position, Piece> next = new HashMap<>(game.whitePieces);
         //assertNotEquals(prev, next);
+        //System.out.print(game.whitePieces.get(new Position(7,7)).getClass().getName());
         assertTrue(game.whitePieces.get(new Position(7,7)) instanceof Queen);
     }
 

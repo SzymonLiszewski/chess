@@ -26,7 +26,7 @@ public class Main extends Application {
         Parameters params = getParameters();
         String sParams[] = params.getRaw().toArray(new String[0]);
         if (sParams.length > 0 && Objects.equals(sParams[1], "--fen")) {
-            game.readFen("3r4/5R2/pp5p/4ppp1/5k2/3r1P2/PP2RKPP/8 w - - 0 33");
+            game.readFen("5r1k/5Rpp/rq2n2N/3pP1Q1/8/1p6/1PP3PP/2KR4 w - - 0 26");
         }
         MinMaxAgent bot = new MinMaxAgent(game, 'w');
         drawBoard(game, stage, imageUrl, params.getRaw().toArray(new String[0]), bot);
