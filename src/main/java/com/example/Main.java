@@ -35,7 +35,7 @@ public class Main extends Application {
     public static void drawBoard(Game game, Stage stage, String imageUrl, String[] params, MinMaxAgent bot){
         if (game.onMove == 'w') {
             if (params.length > 0 && Objects.equals(params[0], "--pva")) {
-                bot.makeMove(2);
+                bot.makeMove(1);
                 drawBoard(game, stage, imageUrl, params, bot);
             }
         }
