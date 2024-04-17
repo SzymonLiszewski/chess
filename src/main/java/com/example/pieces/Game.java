@@ -17,10 +17,14 @@ public class Game implements Serializable {
     public char onMove;
     public boolean isEnd;
     public char winner;
+    public Piece whiteKing;
+    public Piece blackKing;
 
     public Game() {
         whitePieces = new HashMap<>();
         blackPieces = new HashMap<>();
+        whiteKing = new King(new Position(5,1), getClass().getResource("/images/wK.png").toExternalForm(), this, 'w');
+        blackKing = new King(new Position(5,8), getClass().getResource("/images/bK.png").toExternalForm(), this, 'b');
         whitePieces.put(new Position(3,1),new Bishop(new Position(3,1), getClass().getResource("/images/wB.png").toExternalForm(), this, 'w'));
         whitePieces.put(new Position(6,1),new Bishop(new Position(6,1), getClass().getResource("/images/wB.png").toExternalForm(), this, 'w'));
         whitePieces.put(new Position(8,1),new Rook(new Position(8,1), getClass().getResource("/images/wR.png").toExternalForm(), this, 'w'));
@@ -28,7 +32,7 @@ public class Game implements Serializable {
         whitePieces.put(new Position(2,1),new Knight(new Position(2,1), getClass().getResource("/images/wN.png").toExternalForm(), this, 'w'));
         whitePieces.put(new Position(7,1),new Knight(new Position(7,1), getClass().getResource("/images/wN.png").toExternalForm(), this, 'w'));
         whitePieces.put(new Position(4,1),new Queen(new Position(4,1), getClass().getResource("/images/wQ.png").toExternalForm(), this, 'w'));
-        whitePieces.put(new Position(5,1),new King(new Position(5,1), getClass().getResource("/images/wK.png").toExternalForm(), this, 'w'));
+        whitePieces.put(new Position(5,1),whiteKing);
         whitePieces.put(new Position(1,2),new Pawn(new Position(1,2), getClass().getResource("/images/wP.png").toExternalForm(), this, 'w'));
         whitePieces.put(new Position(2,2),new Pawn(new Position(2,2), getClass().getResource("/images/wP.png").toExternalForm(), this, 'w'));
         whitePieces.put(new Position(3,2),new Pawn(new Position(3,2), getClass().getResource("/images/wP.png").toExternalForm(), this, 'w'));
@@ -44,7 +48,7 @@ public class Game implements Serializable {
         blackPieces.put(new Position(2,8),new Knight(new Position(2,8), getClass().getResource("/images/bN.png").toExternalForm(), this, 'b'));
         blackPieces.put(new Position(7,8),new Knight(new Position(7,8), getClass().getResource("/images/bN.png").toExternalForm(), this, 'b'));
         blackPieces.put(new Position(4,8),new Queen(new Position(4,8), getClass().getResource("/images/bQ.png").toExternalForm(), this, 'b'));
-        blackPieces.put(new Position(5,8),new King(new Position(5,8), getClass().getResource("/images/bK.png").toExternalForm(), this, 'b'));
+        blackPieces.put(new Position(5,8),blackKing);
         blackPieces.put(new Position(1,7),new Pawn(new Position(1,7), getClass().getResource("/images/bP.png").toExternalForm(), this, 'b'));
         blackPieces.put(new Position(2,7),new Pawn(new Position(2,7), getClass().getResource("/images/bP.png").toExternalForm(), this, 'b'));
         blackPieces.put(new Position(3,7),new Pawn(new Position(3,7), getClass().getResource("/images/bP.png").toExternalForm(), this, 'b'));
@@ -91,21 +95,10 @@ public class Game implements Serializable {
     }
     public void checkIfEnd(){
         if (checkIfAttacked() == false){return;}
-        King k = new King(new Position(1,1),"1",this,'w');
-        List <Position> kingMoves = new ArrayList<>();
+
         Game cp = (Game) SerializationUtils.clone(this);
         if (onMove == 'w'){
-            for (Map.Entry<Position, Piece> element : this.whitePieces.entrySet()){
-                if (element.getValue() instanceof King){
-                    k = (King)element.getValue();
-                    kingMoves = k.getPossibleMoves();
-                }
-            }
-            for (Map.Entry<Position, Piece> element : this.blackPieces.entrySet()){
-                for (Position p : element.getValue().getPossibleMoves()){
-                    kingMoves.removeIf(el -> el.equals(p));
-                }
-            }
+
             if (true){ //previously if kingmoves==0
                 for (Map.Entry<Position, Piece> element : this.whitePieces.entrySet()){
                     for (Position p : element.getValue().getPossibleMoves()){
@@ -114,42 +107,15 @@ public class Game implements Serializable {
                         cp.onMove = 'w';
                         if (cp.checkIfAttacked() == false){
                             return;}
-                        cp = (Game) SerializationUtils.clone(this);
+                        //cp = (Game) SerializationUtils.clone(this);
                     }
                 }
                 isEnd = true;
                 winner = 'b';
-                System.out.println("mate");
-            }
-            else{
-                int size = kingMoves.size();
-                for (Position p : kingMoves){
-                    cp = (Game) SerializationUtils.clone(this);
-                    cp.whitePieces.get(k.position).Move(p, false);
-                    cp.onMove = 'w';
-                    if (cp.checkIfAttacked()==true) {
-                        size-=1;
-                    }
-                }
-                if (size == 0) {
-                    isEnd = true;
-                    winner = 'b';
-                    System.out.println("mate");
-                }
+                //System.out.println("mate");
             }
         }
         if (onMove == 'b'){
-            for (Map.Entry<Position, Piece> element : this.blackPieces.entrySet()){
-                if (element.getValue() instanceof King){
-                    k = (King)element.getValue();
-                    kingMoves = k.getPossibleMoves();
-                }
-            }
-            for (Map.Entry<Position, Piece> element : this.whitePieces.entrySet()){
-                for (Position p : element.getValue().getPossibleMoves()){
-                    kingMoves.removeIf(el -> el.equals(p));
-                }
-            }
             if (true){
                 for (Map.Entry<Position, Piece> element : this.blackPieces.entrySet()){
                     for (Position p : element.getValue().getPossibleMoves()){
@@ -158,28 +124,12 @@ public class Game implements Serializable {
                         cp.onMove = 'b';
                         if (cp.checkIfAttacked() == false){
                             return;}
-                        cp = (Game) SerializationUtils.clone(this);
+                        //cp = (Game) SerializationUtils.clone(this);
                     }
                 }
                 isEnd = true;
                 winner = 'w';
-                System.out.println("mate");
-            }
-            else{
-                int size = kingMoves.size();
-                for (Position p : kingMoves){
-                    cp = (Game) SerializationUtils.clone(this);
-                    cp.blackPieces.get(k.position).Move(p, false);
-                    cp.onMove = 'b';
-                    if (cp.checkIfAttacked()==true) {
-                        size-=1;
-                    }
-                }
-                if (size == 0) {
-                    isEnd = true;
-                    winner = 'w';
-                    System.out.println("mate");
-                }
+                //System.out.println("mate");
             }
         }
     }

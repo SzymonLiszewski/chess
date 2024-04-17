@@ -23,7 +23,6 @@ public abstract class Piece implements Serializable {
         return position;
     }
     public void Move(Position position, Boolean check){
-        //todo: force moves when king in check
         Boolean isPossible = false;
         for (Position p : this.getPossibleMoves()){
             if (position.getX() == p.getX() && position.getY() == p.getY()){

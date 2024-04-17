@@ -85,11 +85,11 @@ public class MinMaxAgent {
         else if (flag == 1){
             double v = Double.NEGATIVE_INFINITY;
             List<Double> l = new ArrayList<>();
-            Game cp = (Game) SerializationUtils.clone(state);
-            Game temp = (Game) SerializationUtils.clone(cp);
+            //Game cp = (Game) SerializationUtils.clone(state);
+            Game temp = (Game) SerializationUtils.clone(state);
             Set<Map.Entry<Position, Piece>> es = temp.whitePieces.entrySet();
             for (Map.Entry<Position, Piece> element : es){
-                temp = (Game) SerializationUtils.clone(state);
+                //temp = (Game) SerializationUtils.clone(state);
                 List<Position> positions = element.getValue().getPossibleMoves();
                 for (Position p : positions){
                     //element.getValue().Move(p,true);
@@ -97,7 +97,7 @@ public class MinMaxAgent {
                     temp.whitePieces.get(element.getKey()).Move(p,true);
                     if (temp.onMove != this.color) {
                         l.add(decide(temp, -1, depth-1, alpha, beta));
-                        v = Math.max(v, Collections.max(l));
+                        v = Math.max(v, l.get(l.size()-1));
                         alpha = Math.max(v, alpha);
                         if (v>=beta){
                             break;
@@ -111,18 +111,18 @@ public class MinMaxAgent {
         else{
             double v = Double.POSITIVE_INFINITY;
             List<Double> l = new ArrayList<>();
-            Game cp = (Game) SerializationUtils.clone(state);
-            Game temp = (Game) SerializationUtils.clone(cp);
+            //Game cp = (Game) SerializationUtils.clone(state);
+            Game temp = (Game) SerializationUtils.clone(state);
             Set<Map.Entry<Position, Piece>> es = temp.blackPieces.entrySet();
             for (Map.Entry<Position, Piece> element : es){
-                temp = (Game) SerializationUtils.clone(state);
+                //temp = (Game) SerializationUtils.clone(state);
                 List<Position> positions = element.getValue().getPossibleMoves();
                 for (Position p : positions){
                     temp = (Game) SerializationUtils.clone(state);
                     temp.blackPieces.get(element.getValue().getPosition()).Move(p,true);
                     if (temp.onMove == this.color) {
                         l.add(decide(temp, 1, depth-1, alpha, beta));
-                        v = Math.min(v, Collections.min(l));
+                        v = Math.min(v, l.get(l.size()-1));
                         beta = Math.min(v, beta);
                         if (v<=alpha){
                             break;
@@ -150,9 +150,11 @@ public class MinMaxAgent {
             for (Position pos : p.getPossibleMoves()){
                 cp.whitePieces.get(p.getPosition()).Move(pos,true);
                 //p.Move(pos, true);
-                double val = decide(cp, -1, depth, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
-                cp = (Game) SerializationUtils.clone(temp);
-                moveValue.put(new Move(p, pos), val);
+                if (cp.onMove != this.color) {
+                    double val = decide(cp, -1, depth, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
+                    cp = (Game) SerializationUtils.clone(temp);
+                    moveValue.put(new Move(p, pos), val);
+                }
             }
         }
         double max = Double.NEGATIVE_INFINITY;
