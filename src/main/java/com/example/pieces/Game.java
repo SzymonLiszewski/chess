@@ -13,6 +13,8 @@ public class Game implements Serializable {
     long[][] bitBoards = new long[2][6];    //bitboards containing positions of all pieces
     static long[][] pawnAttacks = new long[2][64];   //bitboards containing possible pawn attacks from
                                             // all positions for both black and white
+    static long[] knightAttacks = new long[64];
+    static long[] kingAttacks = new long[64];
 
 
     public enum squares {
@@ -35,11 +37,12 @@ public class Game implements Serializable {
     }
 
     public static void main(String args[]){
-        board = setBit(board, squares.e4);
         System.out.println(board);
         printBitBoard(board);
         pawnAttacks = generatePawnAttackTable();
-        printBitBoard(pawnAttacks[color.white.ordinal()][squares.e4.ordinal()]);
+        knightAttacks = generateKnightAttackTable();
+        kingAttacks = generateKingtAttackTable();
+        printBitBoard(kingAttacks[squares.e4.ordinal()]);
     }
 
     //Printing board with 1 on occupied squares and 0 on free squares
@@ -85,6 +88,8 @@ public class Game implements Serializable {
     //generating moves
     static long notAfile = Long.decode("-72340172838076674");
     static long notHfile = Long.decode("9187201950435737471");
+    static long notABfile = Long.decode("-217020518514230020");
+    static long notHGfile = Long.decode("4557430888798830399");
     public static long maskPawnAttacks(squares square, color side){
         long attacks = 0;
         long bitboard = 0;
@@ -115,6 +120,86 @@ public class Game implements Serializable {
         for (squares i : squares.values()){
             attacks[color.white.ordinal()][i.ordinal()] = maskPawnAttacks(i,color.white);
             attacks[color.black.ordinal()][i.ordinal()] = maskPawnAttacks(i,color.black);
+        }
+        return attacks;
+    }
+    public static long maskKnightAttacks(squares square, color side){
+        long attacks = 0;
+        long bitboard = 0;
+
+        bitboard = setBit(bitboard, square);
+
+        if (((bitboard>>17) & notHfile)!=0) {
+            attacks |= (bitboard >> 17);
+        }
+        if (((bitboard>>15) & notAfile)!=0){
+            attacks |= (bitboard >> 15);
+        }
+        if (((bitboard>>10) & notHGfile)!=0) {
+            attacks |= (bitboard >> 10);
+        }
+        if (((bitboard>>6) & notABfile)!=0){
+            attacks |= (bitboard >> 6);
+        }
+        if (((bitboard<<17) & notAfile)!=0) {
+            attacks |= (bitboard << 17);
+        }
+        if (((bitboard<<15) & notHfile)!=0){
+            attacks |= (bitboard << 15);
+        }
+        if (((bitboard<<10) & notABfile)!=0) {
+            attacks |= (bitboard << 10);
+        }
+        if (((bitboard<<6) & notHGfile)!=0){
+            attacks |= (bitboard << 6);
+        }
+
+        return attacks;
+    }
+    public static long[] generateKnightAttackTable(){
+        long[] attacks = new long[64];
+        for (squares i : squares.values()){
+            attacks[i.ordinal()] = maskKnightAttacks(i,color.white);
+        }
+        return attacks;
+    }
+    public static long maskKingAttacks(squares square, color side){
+        long attacks = 0;
+        long bitboard = 0;
+
+        bitboard = setBit(bitboard, square);
+
+        if (((bitboard>>8))!=0) {
+            attacks |= (bitboard >> 8);
+        }
+        if (((bitboard>>9) & notHfile)!=0){
+            attacks |= (bitboard >> 9);
+        }
+        if (((bitboard>>7) & notAfile)!=0) {
+            attacks |= (bitboard >> 7);
+        }
+        if (((bitboard>>1) & notHfile)!=0){
+            attacks |= (bitboard >> 1);
+        }
+        if (((bitboard<<8))!=0) {
+            attacks |= (bitboard << 8);
+        }
+        if (((bitboard<<9) & notAfile)!=0){
+            attacks |= (bitboard << 9);
+        }
+        if (((bitboard<<7) & notHfile)!=0) {
+            attacks |= (bitboard << 7);
+        }
+        if (((bitboard<<1) & notAfile)!=0){
+            attacks |= (bitboard << 1);
+        }
+
+        return attacks;
+    }
+    public static long[] generateKingtAttackTable(){
+        long[] attacks = new long[64];
+        for (squares i : squares.values()){
+            attacks[i.ordinal()] = maskKingAttacks(i,color.white);
         }
         return attacks;
     }
