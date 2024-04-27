@@ -7,233 +7,115 @@ import java.util.List;
 import java.util.Map;
 
 
-import com.example.pieces.*;
-
-import org.apache.commons.lang3.SerializationUtils;
 
 public class Game implements Serializable {
-    public Map<Position, Piece> whitePieces;
-    public Map<Position, Piece> blackPieces;
-    public char onMove;
-    public boolean isEnd;
-    public char winner;
-    public Piece whiteKing;
-    public Piece blackKing;
+    static long board = 0;
+    long[][] bitBoards = new long[2][6];    //bitboards containing positions of all pieces
+    static long[][] pawnAttacks = new long[2][64];   //bitboards containing possible pawn attacks from
+                                            // all positions for both black and white
 
-    public Game() {
-        whitePieces = new HashMap<>();
-        blackPieces = new HashMap<>();
-        whiteKing = new King(new Position(5,1), getClass().getResource("/images/wK.png").toExternalForm(), this, 'w');
-        blackKing = new King(new Position(5,8), getClass().getResource("/images/bK.png").toExternalForm(), this, 'b');
-        whitePieces.put(new Position(3,1),new Bishop(new Position(3,1), getClass().getResource("/images/wB.png").toExternalForm(), this, 'w'));
-        whitePieces.put(new Position(6,1),new Bishop(new Position(6,1), getClass().getResource("/images/wB.png").toExternalForm(), this, 'w'));
-        whitePieces.put(new Position(8,1),new Rook(new Position(8,1), getClass().getResource("/images/wR.png").toExternalForm(), this, 'w'));
-        whitePieces.put(new Position(1,1),new Rook(new Position(1,1), getClass().getResource("/images/wR.png").toExternalForm(), this, 'w'));
-        whitePieces.put(new Position(2,1),new Knight(new Position(2,1), getClass().getResource("/images/wN.png").toExternalForm(), this, 'w'));
-        whitePieces.put(new Position(7,1),new Knight(new Position(7,1), getClass().getResource("/images/wN.png").toExternalForm(), this, 'w'));
-        whitePieces.put(new Position(4,1),new Queen(new Position(4,1), getClass().getResource("/images/wQ.png").toExternalForm(), this, 'w'));
-        whitePieces.put(new Position(5,1),whiteKing);
-        whitePieces.put(new Position(1,2),new Pawn(new Position(1,2), getClass().getResource("/images/wP.png").toExternalForm(), this, 'w'));
-        whitePieces.put(new Position(2,2),new Pawn(new Position(2,2), getClass().getResource("/images/wP.png").toExternalForm(), this, 'w'));
-        whitePieces.put(new Position(3,2),new Pawn(new Position(3,2), getClass().getResource("/images/wP.png").toExternalForm(), this, 'w'));
-        whitePieces.put(new Position(4,2),new Pawn(new Position(4,2), getClass().getResource("/images/wP.png").toExternalForm(), this, 'w'));
-        whitePieces.put(new Position(5,2),new Pawn(new Position(5,2), getClass().getResource("/images/wP.png").toExternalForm(), this, 'w'));
-        whitePieces.put(new Position(6,2),new Pawn(new Position(6,2), getClass().getResource("/images/wP.png").toExternalForm(), this, 'w'));
-        whitePieces.put(new Position(7,2),new Pawn(new Position(7,2), getClass().getResource("/images/wP.png").toExternalForm(), this, 'w'));
-        whitePieces.put(new Position(8,2),new Pawn(new Position(8,2), getClass().getResource("/images/wP.png").toExternalForm(), this, 'w'));
-        blackPieces.put(new Position(3,8),new Bishop(new Position(3,8), getClass().getResource("/images/bB.png").toExternalForm(), this, 'b'));
-        blackPieces.put(new Position(6,8),new Bishop(new Position(6,8), getClass().getResource("/images/bB.png").toExternalForm(), this, 'b'));
-        blackPieces.put(new Position(8,8),new Rook(new Position(8,8), getClass().getResource("/images/bR.png").toExternalForm(), this, 'b'));
-        blackPieces.put(new Position(1,8),new Rook(new Position(1,8), getClass().getResource("/images/bR.png").toExternalForm(), this, 'b'));
-        blackPieces.put(new Position(2,8),new Knight(new Position(2,8), getClass().getResource("/images/bN.png").toExternalForm(), this, 'b'));
-        blackPieces.put(new Position(7,8),new Knight(new Position(7,8), getClass().getResource("/images/bN.png").toExternalForm(), this, 'b'));
-        blackPieces.put(new Position(4,8),new Queen(new Position(4,8), getClass().getResource("/images/bQ.png").toExternalForm(), this, 'b'));
-        blackPieces.put(new Position(5,8),blackKing);
-        blackPieces.put(new Position(1,7),new Pawn(new Position(1,7), getClass().getResource("/images/bP.png").toExternalForm(), this, 'b'));
-        blackPieces.put(new Position(2,7),new Pawn(new Position(2,7), getClass().getResource("/images/bP.png").toExternalForm(), this, 'b'));
-        blackPieces.put(new Position(3,7),new Pawn(new Position(3,7), getClass().getResource("/images/bP.png").toExternalForm(), this, 'b'));
-        blackPieces.put(new Position(4,7),new Pawn(new Position(4,7), getClass().getResource("/images/bP.png").toExternalForm(), this, 'b'));
-        blackPieces.put(new Position(5,7),new Pawn(new Position(5,7), getClass().getResource("/images/bP.png").toExternalForm(), this, 'b'));
-        blackPieces.put(new Position(6,7),new Pawn(new Position(6,7), getClass().getResource("/images/bP.png").toExternalForm(), this, 'b'));
-        blackPieces.put(new Position(7,7),new Pawn(new Position(7,7), getClass().getResource("/images/bP.png").toExternalForm(), this, 'b'));
-        blackPieces.put(new Position(8,7),new Pawn(new Position(8,7), getClass().getResource("/images/bP.png").toExternalForm(), this, 'b'));
-        onMove = 'w';
-        isEnd = false;
+
+    public enum squares {
+        a8, b8, c8, d8, e8, f8, g8, h8,
+        a7, b7, c7, d7, e7, f7, g7, h7,
+        a6, b6, c6, d6, e6, f6, g6, h6,
+        a5, b5, c5, d5, e5, f5, g5, h5,
+        a4, b4, c4, d4, e4, f4, g4, h4,
+        a3, b3, c3, d3, e3, f3, g3, h3,
+        a2, b2, c2, d2, e2, f2, g2, h2,
+        a1, b1, c1, d1, e1, f1, g1, h1
     }
 
-    public boolean checkIfAttacked(){
-        King k = new King(new Position(5,8),new String(getClass().getResource("/images/wK.png").toExternalForm()), this, 'w');
-        if (onMove == 'w'){
-            for (Map.Entry<Position, Piece> element : this.whitePieces.entrySet()){
-                if (element.getValue() instanceof King){
-                    k = (King)element.getValue();
-                }
-            }
-            for (Map.Entry<Position, Piece> element : this.blackPieces.entrySet()){
-                for (Position p : element.getValue().getPossibleMoves()){
-                    if (p.equals(k.position)){
-                        return true;
-                    }
-                }
-            }
-        }
-        else if (onMove == 'b'){
-            for (Map.Entry<Position, Piece> element : this.blackPieces.entrySet()){
-                if (element.getValue() instanceof King){
-                    k = (King)element.getValue();
-                }
-            }
-            for (Map.Entry<Position, Piece> element : this.whitePieces.entrySet()){
-                for (Position p : element.getValue().getPossibleMoves()){
-                    if (p.equals(k.position)){
-                        return true;
-                    }
-                }
-            }
-        }
-        return false;
-    }
-    public void checkIfEnd(){
-        if (checkIfAttacked() == false){return;}
-
-        Game cp = (Game) SerializationUtils.clone(this);
-        if (onMove == 'w'){
-
-            if (true){ //previously if kingmoves==0
-                for (Map.Entry<Position, Piece> element : this.whitePieces.entrySet()){
-                    for (Position p : element.getValue().getPossibleMoves()){
-                        cp = (Game) SerializationUtils.clone(this);
-                        cp.whitePieces.get(element.getKey()).Move(p, false);
-                        cp.onMove = 'w';
-                        if (cp.checkIfAttacked() == false){
-                            return;}
-                        //cp = (Game) SerializationUtils.clone(this);
-                    }
-                }
-                isEnd = true;
-                winner = 'b';
-                //System.out.println("mate");
-            }
-        }
-        if (onMove == 'b'){
-            if (true){
-                for (Map.Entry<Position, Piece> element : this.blackPieces.entrySet()){
-                    for (Position p : element.getValue().getPossibleMoves()){
-                        cp = (Game) SerializationUtils.clone(this);
-                        cp.blackPieces.get(element.getKey()).Move(p, false);
-                        cp.onMove = 'b';
-                        if (cp.checkIfAttacked() == false){
-                            return;}
-                        //cp = (Game) SerializationUtils.clone(this);
-                    }
-                }
-                isEnd = true;
-                winner = 'w';
-                //System.out.println("mate");
-            }
-        }
-    }
-    public void readFen(String fen){
-        int x = 1;
-        int y = 8;
-        this.whitePieces.clear();
-        this.blackPieces.clear();
-        for (int i=0;i<fen.length();i++){
-            char currentChar = fen.charAt(i);
-            if (currentChar == 'r'){
-                this.blackPieces.put(new Position(x,y),new Rook(new Position(x,y), getClass().getResource("/images/bR.png").toExternalForm(), this, 'b'));
-            }
-            else if (currentChar == 'n'){
-                this.blackPieces.put(new Position(x,y),new Knight(new Position(x,y), getClass().getResource("/images/bN.png").toExternalForm(), this, 'b'));
-            }
-            else if (currentChar == 'b'){
-                this.blackPieces.put(new Position(x,y),new Bishop(new Position(x,y), getClass().getResource("/images/bB.png").toExternalForm(), this, 'b'));
-            }
-            else if (currentChar == 'q'){
-                this.blackPieces.put(new Position(x,y),new Queen(new Position(x,y), getClass().getResource("/images/bQ.png").toExternalForm(), this, 'b'));
-            }
-            else if (currentChar == 'k'){
-                this.blackPieces.put(new Position(x,y),new King(new Position(x,y), getClass().getResource("/images/bK.png").toExternalForm(), this, 'b'));
-            }
-            else if (currentChar == 'p'){
-                this.blackPieces.put(new Position(x,y),new Pawn(new Position(x,y), getClass().getResource("/images/bP.png").toExternalForm(), this, 'b'));
-            }
-            else if (currentChar == 'R'){
-                this.whitePieces.put(new Position(x,y),new Rook(new Position(x,y), getClass().getResource("/images/wR.png").toExternalForm(), this, 'w'));
-            }
-            else if (currentChar == 'N'){
-                this.whitePieces.put(new Position(x,y),new Knight(new Position(x,y), getClass().getResource("/images/wN.png").toExternalForm(), this, 'w'));
-            }
-            else if (currentChar == 'B'){
-                this.whitePieces.put(new Position(x,y),new Bishop(new Position(x,y), getClass().getResource("/images/wB.png").toExternalForm(), this, 'w'));
-            }
-            else if (currentChar == 'Q'){
-                this.whitePieces.put(new Position(x,y),new Queen(new Position(x,y), getClass().getResource("/images/wQ.png").toExternalForm(), this, 'w'));
-            }
-            else if (currentChar == 'K'){
-                this.whitePieces.put(new Position(x,y),new King(new Position(x,y), getClass().getResource("/images/wK.png").toExternalForm(), this, 'w'));
-            }
-            else if (currentChar == 'P'){
-                this.whitePieces.put(new Position(x,y),new Pawn(new Position(x,y), getClass().getResource("/images/wP.png").toExternalForm(), this, 'w'));
-            }
-            else if (currentChar>='1' && currentChar<='8'){
-                x+=currentChar-'0'-1;
-            }
-            if (currentChar != '/'){
-                x+=1;
-                if (x>8){
-                    x=1;
-                    y-=1;
-                }
-            }
-            if(currentChar == ' '){
-                i++;
-                currentChar = fen.charAt(i);
-                    if (currentChar == 'w'){
-                        onMove = 'w';
-                    }
-                    else if (currentChar == 'b'){
-                        onMove = 'b';
-                    }
-                    i+=2;
-                    currentChar = fen.charAt(i);
-                    if (currentChar == '-'){
-                        i+=2;
-                        currentChar = fen.charAt(i);
-                    }
-                    else{
-                        while (currentChar != ' '){
-                            if (currentChar == 'K'){
-
-                            }
-                            else if (currentChar == 'Q'){
-
-                            }
-                            else if (currentChar == 'k'){
-
-                            }
-                            else if (currentChar == 'q'){
-
-                            }
-                            i++;
-                            currentChar = fen.charAt(i);
-                        }
-                    }
-                    i++;
-                    currentChar = fen.charAt(i);
-                    int halfMove = currentChar-'0';
-                    i+=2;
-                    currentChar = fen.charAt(i);
-                    int moves = currentChar-'0';
-                    i++;
-                    if (i<fen.length()){
-                        currentChar = fen.charAt(i);
-                        moves=moves*10;
-                        moves+=currentChar-'0';
-                    }
-
-            }
-        }
+    public enum pieces{
+        pawn,rook,knight,bishop,queen,king
     }
 
+    public enum color{
+        white, black
+    }
+
+    public static void main(String args[]){
+        board = setBit(board, squares.e4);
+        System.out.println(board);
+        printBitBoard(board);
+        pawnAttacks = generatePawnAttackTable();
+        printBitBoard(pawnAttacks[color.white.ordinal()][squares.e4.ordinal()]);
+    }
+
+    //Printing board with 1 on occupied squares and 0 on free squares
+    public static void printBitBoard(long bitboard){
+        for (int rank = 0; rank<8;rank++){
+            for (int file = 0; file < 8;file++){
+                int pos = rank*8+file;
+                if (file == 0){
+                    System.out.print(String.valueOf(8-rank)+" ");
+                }
+                if ((bitboard & (long) 1 << pos)!=0){
+                    System.out.print("1 ");
+                }
+                else{
+                    System.out.print("0 ");
+                }
+            }
+            System.out.println();
+        }
+        System.out.println("  A B C D E F G H");
+    }
+
+    //setting 1 on bit representing given square
+    public static long setBit(long bitBoard, squares square){
+
+        bitBoard |= ((long) 1 << square.ordinal());
+        return bitBoard;
+    }
+
+    //setting 0 on bit representing given square
+    public static long removeBit(long bitBoard,squares square){
+        if (getbit(square)) { //check if bit on given square is 1
+            bitBoard ^= ((long) 1 << square.ordinal());
+        }
+        return bitBoard;
+    }
+
+    public static boolean getbit(squares square){
+        return ((board & ((long) 1 << square.ordinal()))!=0);
+    }
+
+
+    //generating moves
+    static long notAfile = Long.decode("-72340172838076674");
+    static long notHfile = Long.decode("9187201950435737471");
+    public static long maskPawnAttacks(squares square, color side){
+        long attacks = 0;
+        long bitboard = 0;
+
+        bitboard = setBit(bitboard, square);
+
+        if (side == color.white){
+            if (((bitboard>>7) & notAfile)!=0) {
+                attacks |= (bitboard >> 7);
+            }
+            if (((bitboard>>9) & notHfile)!=0){
+                attacks |= (bitboard >> 9);
+            }
+        }
+        else{
+            if (((bitboard<<7) & notHfile)!=0) {
+                attacks |= (bitboard << 7);
+            }
+            if (((bitboard<<9) & notAfile)!=0){
+                attacks |= (bitboard << 9);
+            }
+        }
+
+        return attacks;
+    }
+    public static long[][] generatePawnAttackTable(){
+        long[][] attacks = new long[2][64];
+        for (squares i : squares.values()){
+            attacks[color.white.ordinal()][i.ordinal()] = maskPawnAttacks(i,color.white);
+            attacks[color.black.ordinal()][i.ordinal()] = maskPawnAttacks(i,color.black);
+        }
+        return attacks;
+    }
 }
