@@ -1,11 +1,7 @@
 package com.example.pieces;
 
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
+import java.util.*;
 
 
 public class Game implements Serializable {
@@ -22,6 +18,7 @@ public class Game implements Serializable {
     static long[] fileMask = new long[64];
     static long[] rankMask = new long[64];
 
+    color engineSide = color.white;
 
     public enum squares {
         a8, b8, c8, d8, e8, f8, g8, h8,
@@ -43,17 +40,13 @@ public class Game implements Serializable {
     }
 
     public static void main(String args[]){
-        System.out.println(board);
-        printBitBoard(board);
         pawnAttacks = generatePawnAttackTable();
         knightAttacks = generateKnightAttackTable();
         kingAttacks = generateKingAttackTable();
-        printBitBoard(kingAttacks[squares.h1.ordinal()]);
         bitMask = generateBitMask();
         generateMasks();
-        printBitBoard(rankMask[squares.a1.ordinal()]);
-        board = setBit(board,squares.c1);
-        printBitBoard(rankAttacks(board,squares.e1));
+
+        UCI();
     }
 
     //Printing board with 1 on occupied squares and 0 on free squares
@@ -367,5 +360,71 @@ public class Game implements Serializable {
         return attacks;
     }
 
+    //connecting to gui using UCI
+    public static void UCI(){
+        Scanner scanner = new Scanner(System.in);
 
+        while (true) {
+            //System.out.print("Podaj polecenie: ");
+            String command = scanner.nextLine();
+            if (command.startsWith("uci")) {
+                System.out.println("id name test");
+                System.out.println("uciok");
+                //handleUCICommand();
+            } else if (command.equals("isready")) {
+                System.out.println("readyok");
+                //handleIsReadyCommand();
+            } else if (command.equals("ucinewgame")) {
+                //handleUCINewGameCommand();
+            } else if (command.startsWith("position")) {
+                try {
+                    Thread.sleep(1000);
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
+                System.out.println("bestmove e2e4");
+                //handlePositionCommand(command);
+            } else if (command.startsWith("go")) {
+                //handleGoCommand(command);
+            } else if (command.equals("stop")) {
+                //handleStopCommand();
+            } else if (command.equals("ponderhit")) {
+                //handlePonderHitCommand();
+            } else if (command.equals("quit")) {
+                //handleQuitCommand();
+                break;
+            } else {
+                //System.out.println("Nieznane polecenie: " + command);
+            }
+        }
+
+        scanner.close();
+    }
+
+    public void readFen(String fen){
+        String[] parts = fen.split(" ");
+        String[] rows = parts[0].split("/");
+
+        String[][] board = new String[8][8];
+        int rowIdx = 0;
+        for (String row : rows) {
+            int colIdx = 0;
+            for (char c : row.toCharArray()) {
+                if (Character.isDigit(c)) {
+                    int emptySpaces = Character.getNumericValue(c);
+                    for (int i = 0; i < emptySpaces; i++) {
+                        board[rowIdx][colIdx++] = "-";
+                    }
+                } else {
+                    board[rowIdx][colIdx++] = String.valueOf(c);
+                }
+            }
+            rowIdx++;
+        }
+    }
+
+    //todo: read fen
+    //todo: makemove
+    //todo: perft function
+    //todo: minmax
 }
