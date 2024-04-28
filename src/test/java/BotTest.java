@@ -1,4 +1,3 @@
-import com.example.MinMaxAgent;
 import com.example.pieces.*;
 import org.junit.Test;
 

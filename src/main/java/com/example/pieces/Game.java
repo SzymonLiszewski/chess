@@ -10,11 +10,17 @@ import java.util.Map;
 
 public class Game implements Serializable {
     static long board = 0;
+    static long[] occupancy = new long[2];   //occupancy bitboard for white and black
     long[][] bitBoards = new long[2][6];    //bitboards containing positions of all pieces
     static long[][] pawnAttacks = new long[2][64];   //bitboards containing possible pawn attacks from
                                             // all positions for both black and white
     static long[] knightAttacks = new long[64];
     static long[] kingAttacks = new long[64];
+    static long[] bitMask = new long[64];
+    static long[] diagonalMask = new long[64];
+    static long[] antiDiagonalMask = new long[64];
+    static long[] fileMask = new long[64];
+    static long[] rankMask = new long[64];
 
 
     public enum squares {
@@ -41,8 +47,13 @@ public class Game implements Serializable {
         printBitBoard(board);
         pawnAttacks = generatePawnAttackTable();
         knightAttacks = generateKnightAttackTable();
-        kingAttacks = generateKingtAttackTable();
-        printBitBoard(kingAttacks[squares.e4.ordinal()]);
+        kingAttacks = generateKingAttackTable();
+        printBitBoard(kingAttacks[squares.h1.ordinal()]);
+        bitMask = generateBitMask();
+        generateMasks();
+        printBitBoard(rankMask[squares.a1.ordinal()]);
+        board = setBit(board,squares.c1);
+        printBitBoard(rankAttacks(board,squares.e1));
     }
 
     //Printing board with 1 on occupied squares and 0 on free squares
@@ -86,6 +97,7 @@ public class Game implements Serializable {
 
 
     //generating moves
+    // using >>> to avoid generating ones on most significant bits (due to U2)
     static long notAfile = Long.decode("-72340172838076674");
     static long notHfile = Long.decode("9187201950435737471");
     static long notABfile = Long.decode("-217020518514230020");
@@ -97,11 +109,11 @@ public class Game implements Serializable {
         bitboard = setBit(bitboard, square);
 
         if (side == color.white){
-            if (((bitboard>>7) & notAfile)!=0) {
-                attacks |= (bitboard >> 7);
+            if (((bitboard>>>7) & notAfile)!=0) {
+                attacks |= (bitboard >>> 7);
             }
-            if (((bitboard>>9) & notHfile)!=0){
-                attacks |= (bitboard >> 9);
+            if (((bitboard>>>9) & notHfile)!=0){
+                attacks |= (bitboard >>> 9);
             }
         }
         else{
@@ -123,23 +135,23 @@ public class Game implements Serializable {
         }
         return attacks;
     }
-    public static long maskKnightAttacks(squares square, color side){
+    public static long maskKnightAttacks(squares square){
         long attacks = 0;
         long bitboard = 0;
 
         bitboard = setBit(bitboard, square);
 
-        if (((bitboard>>17) & notHfile)!=0) {
-            attacks |= (bitboard >> 17);
+        if (((bitboard>>>17) & notHfile)!=0) {
+            attacks |= (bitboard >>> 17);
         }
-        if (((bitboard>>15) & notAfile)!=0){
-            attacks |= (bitboard >> 15);
+        if (((bitboard>>>15) & notAfile)!=0){
+            attacks |= (bitboard >>> 15);
         }
-        if (((bitboard>>10) & notHGfile)!=0) {
-            attacks |= (bitboard >> 10);
+        if (((bitboard>>>10) & notHGfile)!=0) {
+            attacks |= (bitboard >>> 10);
         }
-        if (((bitboard>>6) & notABfile)!=0){
-            attacks |= (bitboard >> 6);
+        if (((bitboard>>>6) & notABfile)!=0){
+            attacks |= (bitboard >>> 6);
         }
         if (((bitboard<<17) & notAfile)!=0) {
             attacks |= (bitboard << 17);
@@ -159,7 +171,7 @@ public class Game implements Serializable {
     public static long[] generateKnightAttackTable(){
         long[] attacks = new long[64];
         for (squares i : squares.values()){
-            attacks[i.ordinal()] = maskKnightAttacks(i,color.white);
+            attacks[i.ordinal()] = maskKnightAttacks(i);
         }
         return attacks;
     }
@@ -169,19 +181,20 @@ public class Game implements Serializable {
 
         bitboard = setBit(bitboard, square);
 
-        if (((bitboard>>8))!=0) {
-            attacks |= (bitboard >> 8);
+
+        if (((bitboard>>>8))!=0) {
+            attacks |= (bitboard >>> 8);
         }
-        if (((bitboard>>9) & notHfile)!=0){
-            attacks |= (bitboard >> 9);
+        if (((bitboard>>>9) & notHfile)!=0){
+            attacks |= (bitboard >>> 9);
         }
-        if (((bitboard>>7) & notAfile)!=0) {
-            attacks |= (bitboard >> 7);
+        if (((bitboard>>>7) & notAfile)!=0) {
+            attacks |= (bitboard >>> 7);
         }
-        if (((bitboard>>1) & notHfile)!=0){
-            attacks |= (bitboard >> 1);
+        if (((bitboard>>>1) & notHfile)!=0){
+            attacks |= (bitboard >>> 1);
         }
-        if (((bitboard<<8))!=0) {
+        if (((bitboard<<8))!=0 ) {
             attacks |= (bitboard << 8);
         }
         if (((bitboard<<9) & notAfile)!=0){
@@ -196,11 +209,163 @@ public class Game implements Serializable {
 
         return attacks;
     }
-    public static long[] generateKingtAttackTable(){
+    public static long[] generateKingAttackTable(){
         long[] attacks = new long[64];
         for (squares i : squares.values()){
             attacks[i.ordinal()] = maskKingAttacks(i,color.white);
         }
         return attacks;
     }
+
+    //sliding moves
+    public static long[] generateBitMask(){
+        long[] bits = new long[64];
+        long k = 1;
+        for (int i =0;i<64;i++){
+            bits[i]=k;
+            k = k<<1;
+        }
+        return bits;
+    }
+
+
+    //generating sliding piece attacks using Hyperbola Quintessence method
+    public static long maskDiagonalAttacks(squares square){
+        long attacks = 0;
+        long bitboard = 0;
+
+        bitboard = 0;
+        bitboard = setBit(bitboard, square);
+        while (((bitboard>>>9) & notHfile)!=0){
+            attacks |= (bitboard >>> 9);
+            bitboard = (bitboard >>> 9);
+        }
+        bitboard = 0;
+        bitboard = setBit(bitboard, square);
+        while (((bitboard<<9) & notAfile)!=0){
+            attacks |= (bitboard << 9);
+            bitboard = (bitboard << 9);
+        }
+        return attacks;
+    }
+
+    public static long maskAntiDiagonalAttacks(squares square){
+        long attacks = 0;
+        long bitboard = 0;
+
+        bitboard = setBit(bitboard, square);
+        while (((bitboard>>>7) & notAfile)!=0) {
+            attacks |= (bitboard >>> 7);
+            bitboard = (bitboard >>> 7);
+        }
+
+        bitboard = 0;
+        bitboard = setBit(bitboard, square);
+        while (((bitboard<<7) & notHfile)!=0) {
+            attacks |= (bitboard << 7);
+            bitboard = (bitboard << 7);
+        }
+
+        return attacks;
+    }
+    public static long maskrankAttacks(squares square){
+        long attacks = 0;
+        long bitboard = 0;
+
+        bitboard = setBit(bitboard, square);
+        while (((bitboard>>>1) & notHfile)!=0) {
+            attacks |= (bitboard >>> 1);
+            bitboard = (bitboard >>> 1);
+        }
+
+        bitboard = 0;
+        bitboard = setBit(bitboard, square);
+        while (((bitboard<<1) & notAfile)!=0) {
+            attacks |= (bitboard << 1);
+            bitboard = (bitboard << 1);
+        }
+
+        return attacks;
+    }
+    public static long maskfileAttacks(squares square){
+        long attacks = 0;
+        long bitboard = 0;
+
+        bitboard = setBit(bitboard, square);
+        while (((bitboard>>>8))!=0) {
+            attacks |= (bitboard >>> 8);
+            bitboard = (bitboard >>> 8);
+        }
+
+        bitboard = 0;
+        bitboard = setBit(bitboard, square);
+        while (((bitboard<<8))!=0) {
+            attacks |= (bitboard << 8);
+            bitboard = (bitboard << 8);
+        }
+
+        return attacks;
+    }
+    public static void generateMasks(){
+        for (squares i : squares.values()){
+            diagonalMask[i.ordinal()] = maskDiagonalAttacks(i);
+        }
+        for (squares i : squares.values()){
+            antiDiagonalMask[i.ordinal()] = maskAntiDiagonalAttacks(i);
+        }
+        for (squares i : squares.values()){
+            fileMask[i.ordinal()] = maskfileAttacks(i);
+        }
+        for (squares i : squares.values()){
+            rankMask[i.ordinal()] = maskrankAttacks(i);
+        }
+    }
+    static public long diagonalAttacks(long occ, int sq) {
+        long forward = occ & diagonalMask[sq];
+        long reverse = Long.reverseBytes(forward);
+        forward -= bitMask[sq];
+        reverse -= bitMask[sq^56];
+        forward ^= Long.reverseBytes(reverse);
+        forward &= diagonalMask[sq];
+        return forward;
+    }
+    static public long antiDiagonalAttacks(long occ, int sq) {
+        long forward = occ & antiDiagonalMask[sq];
+        long reverse = Long.reverseBytes(forward);
+        forward -= bitMask[sq];
+        reverse -= bitMask[sq^56];
+        forward ^= Long.reverseBytes(reverse);
+        forward &= antiDiagonalMask[sq];
+        return forward;
+    }
+    static public long fileAttacks(long occ, int sq) {
+        long forward = occ & fileMask[sq];
+        long reverse = Long.reverseBytes(forward);
+        forward -= bitMask[sq];
+        reverse -= bitMask[sq^56];
+        forward ^= Long.reverseBytes(reverse);
+        forward &= fileMask[sq];
+        return forward;
+    }
+    static public long rankAttacks(long occ, squares square) {
+        long attacks = 0;
+        long bitboard = 0;
+
+        bitboard = setBit(bitboard, square);
+        while (((bitboard>>>1) & notHfile)!=0 && ((bitboard) & occ)==0) {
+            attacks |= (bitboard >>> 1);
+            bitboard = (bitboard >>> 1);
+        }
+
+        bitboard = 0;
+        bitboard = setBit(bitboard, square);
+        while (((bitboard<<1) & notAfile)!=0  && ((bitboard) & occ)==0) {
+            attacks |= (bitboard << 1);
+            bitboard = (bitboard << 1);
+        }
+
+        return attacks;
+    }
+
+
 }
