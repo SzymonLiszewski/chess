@@ -10,7 +10,8 @@ public class Game implements Serializable {
     static long[][] bitBoards = new long[2][6];    //bitboards containing positions of all pieces
 
 
-    color engineSide = color.white;
+    static color engineSide = color.white;
+    static color onMove = color.white;
 
     public enum squares {
         a8, b8, c8, d8, e8, f8, g8, h8,
@@ -35,12 +36,13 @@ public class Game implements Serializable {
        LookupTables lookupTables = new LookupTables();
 
         readFen("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
-        printBitBoard(bitBoards[color.white.ordinal()][pieces.king.ordinal()]);
-        //UCI();
+        //printBitBoard(bitBoards[color.white.ordinal()][pieces.king.ordinal()]);
+        UCI(lookupTables);
         //bitBoards[color.white.ordinal()][pieces.pawn.ordinal()] = setBit(bitBoards[color.white.ordinal()][pieces.pawn.ordinal()],squares.e4);
-        HashMap<Integer, Long> movesList= generateMovesList(color.white,lookupTables);
-        System.out.println(squares.b1.ordinal());
-        printBitBoard(movesList.get(squares.b1.ordinal()));
+        List<Move> movesList= generateMovesList(color.white,lookupTables);
+        //System.out.println(squares.b1.ordinal());
+        //printBitBoard(movesList.get(squares.b1.ordinal()));
+        //System.out.println(movesList.get(0).toString());
     }
 
     //Printing board with 1 on occupied squares and 0 on free squares
@@ -77,21 +79,22 @@ public class Game implements Serializable {
 
     //setting 0 on bit representing given square
     public static long removeBit(long bitBoard,squares square){
-        if (getbit(square)) { //check if bit on given square is 1
+        if (getbit(bitBoard,square)) { //check if bit on given square is 1
             bitBoard ^= ((long) 1 << square.ordinal());
         }
         return bitBoard;
     }
 
-    public static boolean getbit(squares square){
-        return ((board & ((long) 1 << square.ordinal()))!=0);
+    public static boolean getbit(long bitboard, squares square){
+        long x = (long) 1 << square.ordinal();
+        return ((bitboard & ((long) 1 << square.ordinal()))!=0);
     }
 
 
 
 
     //connecting to gui using UCI
-    public static void UCI(){
+    public static void UCI(LookupTables lookupTables){
         Scanner scanner = new Scanner(System.in);
 
         while (true) {
@@ -107,14 +110,17 @@ public class Game implements Serializable {
             } else if (command.equals("ucinewgame")) {
                 //handleUCINewGameCommand();
             } else if (command.startsWith("position")) {
-                try {
-                    Thread.sleep(1000);
-                } catch (InterruptedException e) {
-                    throw new RuntimeException(e);
+                String[] s = command.split(" ");
+                if (!Objects.equals(s[s.length - 1], "startpos")){
+                    makeMove(encode(s[s.length - 1],onMove));
+                    onMove = color.values()[(onMove.ordinal()+1)%2];
                 }
-                System.out.println("bestmove e2e4");
                 //handlePositionCommand(command);
             } else if (command.startsWith("go")) {
+                Move move = decide(generateMovesList(engineSide, lookupTables));
+                System.out.println("bestmove " +move.toString());
+                makeMove(move);
+                onMove = color.values()[(onMove.ordinal()+1)%2];
                 //handleGoCommand(command);
             } else if (command.equals("stop")) {
                 //handleStopCommand();
@@ -227,8 +233,8 @@ public class Game implements Serializable {
         folded = (int) (bb ^ (bb >>> 32));
         return index64[folded * 0x78291ACF >>> 26];
     }
-    public static HashMap<Integer, Long> generateMovesList(color color, LookupTables tables){
-        HashMap<Integer, Long> list = new HashMap<>();
+    public static List<Move> generateMovesList(color color, LookupTables tables){
+        List<Move> list = new ArrayList<>();
         int LS1Bindex;
         int index;
         long temp;
@@ -238,7 +244,16 @@ public class Game implements Serializable {
             index = LS1Bindex;
             temp = i;
             while (index!=-1){
-                list.put(LS1Bindex, tables.getAttacks(pieces.values()[piece],LS1Bindex,color, occupancy[color.white.ordinal()],occupancy[color.black.ordinal()]));
+                long attacks = tables.getAttacks(pieces.values()[piece],LS1Bindex,color, occupancy[color.white.ordinal()],occupancy[color.black.ordinal()]);
+                int LS1Bindex2 = getLSB(attacks);
+                int index2 = LS1Bindex2;
+                while (index2!=-1){
+                    list.add(new Move(squares.values()[LS1Bindex], squares.values()[LS1Bindex2],pieces.values()[piece], color));
+                    attacks = attacks>>>(index2+1);
+                    index2 = getLSB(attacks);
+                    LS1Bindex2 += index2+1;
+                }
+                //list.put(LS1Bindex, tables.getAttacks(pieces.values()[piece],LS1Bindex,color, occupancy[color.white.ordinal()],occupancy[color.black.ordinal()]));
                 i = i>>>(index+1);
                 index = getLSB(i);
                 LS1Bindex += index+1;
@@ -248,11 +263,53 @@ public class Game implements Serializable {
         }
         return list;
     }
-    public void makeMove(){
 
+
+    public static Move decide(List<Move> movesList){
+        Random rand = new Random();
+        int randomInt = rand.nextInt(movesList.size());
+        return (movesList.get(randomInt));
     }
 
-    //todo: get lsb,moves list, makemove
+
+    public static void makeMove(Move move){
+        //remove bit from previous position and set on new position for pieces bitboard
+        bitBoards[move.getColor().ordinal()][move.getPiece().ordinal()] = removeBit(bitBoards[move.getColor().ordinal()][move.getPiece().ordinal()],move.getSource());
+        bitBoards[move.getColor().ordinal()][move.getPiece().ordinal()] = setBit(bitBoards[move.getColor().ordinal()][move.getPiece().ordinal()], move.getTarget());
+
+        //remove bit from previous position and set on new position for occupancy bitboard
+        occupancy[move.getColor().ordinal()] = removeBit( occupancy[move.getColor().ordinal()],move.getSource());
+        occupancy[move.getColor().ordinal()] = setBit( occupancy[move.getColor().ordinal()], move.getTarget());
+
+        //remove bit if captured opponent pieces
+        long enemyOcc = occupancy[(move.getColor().ordinal()+1)%2];
+        occupancy[(move.getColor().ordinal()+1)%2] = removeBit(occupancy[(move.getColor().ordinal()+1)%2],move.getTarget());
+        if (enemyOcc != occupancy[(move.getColor().ordinal()+1)%2]){    //check if captured any piece
+            for (int i=0;i< bitBoards[(move.getColor().ordinal()+1)%2].length;i++){
+                if ((bitBoards[(move.getColor().ordinal()+1)%2][i] & bitBoards[(move.getColor().ordinal()+1)%2][move.getPiece().ordinal()])!=0){
+                    bitBoards[(move.getColor().ordinal()+1)%2][i] = removeBit(bitBoards[(move.getColor().ordinal()+1)%2][i],move.getTarget());
+                    break;
+                }
+            }
+        }
+    }
+
+    public static Move encode(String string, color color){
+        squares s1 = squares.valueOf(string.substring(0,2));
+        squares s2 = squares.valueOf(string.substring(2,4));
+        long pos = 0;
+        pos = setBit(pos,s1);
+        pieces piece = pieces.king;
+        for (int i=0;i< bitBoards[(color.ordinal()+1)%2].length;i++){
+            if ((bitBoards[color.ordinal()][i] & pos)!=0){
+                piece = pieces.values()[i];
+                break;
+            }
+        }
+        return new Move(s1,s2,piece,color);
+    }
+
+    //todo: encode/decode move, makemove
     //todo: perft function
     //todo: minmax
 }

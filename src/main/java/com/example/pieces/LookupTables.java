@@ -310,7 +310,7 @@ public class LookupTables {
             return kingAttacks[position] - (kingAttacks[position] & occ);
         }
         else if (piece == Game.pieces.pawn){
-            return pawnAttacks[color.ordinal()][position] -(pawnAttacks[color.ordinal()][position] & occ);
+            //return pawnAttacks[color.ordinal()][position] -(pawnAttacks[color.ordinal()][position] & occ);
         }
         return 0;
     }
