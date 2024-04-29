@@ -294,4 +294,24 @@ public class LookupTables {
 
         return attacks;
     }
+
+    public long getAttacks(Game.pieces piece, int position, Game.color color, long wocc, long bocc){    //wocc, bocc - white/black occupancy bitboard
+        long occ;
+        if (color == Game.color.white){
+            occ = wocc;
+        }
+        else{
+            occ = bocc;
+        }
+        if (piece == Game.pieces.knight){
+            return knightAttacks[position] - (knightAttacks[position] & occ);                       // masking bits so pieces cant attack squares occupied
+        }                                                                                           //by other pieces of same color
+        else if (piece == Game.pieces.king) {
+            return kingAttacks[position] - (kingAttacks[position] & occ);
+        }
+        else if (piece == Game.pieces.pawn){
+            return pawnAttacks[color.ordinal()][position] -(pawnAttacks[color.ordinal()][position] & occ);
+        }
+        return 0;
+    }
 }

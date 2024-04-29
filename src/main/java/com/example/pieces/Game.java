@@ -35,8 +35,12 @@ public class Game implements Serializable {
        LookupTables lookupTables = new LookupTables();
 
         readFen("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
-        printBitBoard(bitBoards[color.white.ordinal()][pieces.knight.ordinal()]);
+        printBitBoard(bitBoards[color.white.ordinal()][pieces.king.ordinal()]);
         //UCI();
+        //bitBoards[color.white.ordinal()][pieces.pawn.ordinal()] = setBit(bitBoards[color.white.ordinal()][pieces.pawn.ordinal()],squares.e4);
+        HashMap<Integer, Long> movesList= generateMovesList(color.white,lookupTables);
+        System.out.println(squares.b1.ordinal());
+        printBitBoard(movesList.get(squares.b1.ordinal()));
     }
 
     //Printing board with 1 on occupied squares and 0 on free squares
@@ -145,39 +149,51 @@ public class Game implements Serializable {
                     switch (c){
                         case 'P':
                             bitBoards[color.white.ordinal()][pieces.pawn.ordinal()] = setBit(bitBoards[color.white.ordinal()][pieces.pawn.ordinal()], squareIdx);
+                            occupancy[color.white.ordinal()] = setBit(occupancy[color.white.ordinal()],squareIdx );
                             break;
                         case 'R':
                             bitBoards[color.white.ordinal()][pieces.rook.ordinal()] = setBit(bitBoards[color.white.ordinal()][pieces.rook.ordinal()], squareIdx);
+                            occupancy[color.white.ordinal()] = setBit(occupancy[color.white.ordinal()],squareIdx );
                             break;
                         case 'B':
                             bitBoards[color.white.ordinal()][pieces.bishop.ordinal()] = setBit(bitBoards[color.white.ordinal()][pieces.bishop.ordinal()], squareIdx);
+                            occupancy[color.white.ordinal()] = setBit(occupancy[color.white.ordinal()],squareIdx );
                             break;
                         case 'N':
                             bitBoards[color.white.ordinal()][pieces.knight.ordinal()] = setBit(bitBoards[color.white.ordinal()][pieces.knight.ordinal()], squareIdx);
+                            occupancy[color.white.ordinal()] = setBit(occupancy[color.white.ordinal()],squareIdx );
                             break;
                         case 'K':
-                            bitBoards[color.white.ordinal()][pieces.king.ordinal()] = setBit(bitBoards[color.white.ordinal()][pieces.knight.ordinal()], squareIdx);
+                            bitBoards[color.white.ordinal()][pieces.king.ordinal()] = setBit(bitBoards[color.white.ordinal()][pieces.king.ordinal()], squareIdx);
+                            occupancy[color.white.ordinal()] = setBit(occupancy[color.white.ordinal()],squareIdx );
                             break;
                         case 'Q':
                             bitBoards[color.white.ordinal()][pieces.queen.ordinal()] = setBit(bitBoards[color.white.ordinal()][pieces.queen.ordinal()], squareIdx);
+                            occupancy[color.white.ordinal()] = setBit(occupancy[color.white.ordinal()],squareIdx );
                             break;
                         case 'p':
                             bitBoards[color.black.ordinal()][pieces.pawn.ordinal()] = setBit(bitBoards[color.white.ordinal()][pieces.pawn.ordinal()], squareIdx);
+                            occupancy[color.black.ordinal()] = setBit(occupancy[color.black.ordinal()],squareIdx );
                             break;
                         case 'r':
                             bitBoards[color.black.ordinal()][pieces.rook.ordinal()] = setBit(bitBoards[color.white.ordinal()][pieces.rook.ordinal()], squareIdx);
+                            occupancy[color.black.ordinal()] = setBit(occupancy[color.black.ordinal()],squareIdx );
                             break;
                         case 'b':
                             bitBoards[color.black.ordinal()][pieces.bishop.ordinal()] = setBit(bitBoards[color.white.ordinal()][pieces.bishop.ordinal()], squareIdx);
+                            occupancy[color.black.ordinal()] = setBit(occupancy[color.black.ordinal()],squareIdx );
                             break;
                         case 'n':
                             bitBoards[color.black.ordinal()][pieces.knight.ordinal()] = setBit(bitBoards[color.white.ordinal()][pieces.knight.ordinal()], squareIdx);
+                            occupancy[color.black.ordinal()] = setBit(occupancy[color.black.ordinal()],squareIdx );
                             break;
                         case 'k':
                             bitBoards[color.black.ordinal()][pieces.king.ordinal()] = setBit(bitBoards[color.white.ordinal()][pieces.king.ordinal()], squareIdx);
+                            occupancy[color.black.ordinal()] = setBit(occupancy[color.black.ordinal()],squareIdx );
                             break;
                         case 'q':
                             bitBoards[color.black.ordinal()][pieces.queen.ordinal()] = setBit(bitBoards[color.white.ordinal()][pieces.queen.ordinal()], squareIdx);
+                            occupancy[color.black.ordinal()] = setBit(occupancy[color.black.ordinal()],squareIdx );
                             break;
                     }
                     board = board = setBit(board, squareIdx);
@@ -188,11 +204,55 @@ public class Game implements Serializable {
         }
     }
 
+
+    //making move
+    static int[] index64 = new int[]{
+            63, 30,  3, 32, 59, 14, 11, 33,
+            60, 24, 50,  9, 55, 19, 21, 34,
+            61, 29,  2, 53, 51, 23, 41, 18,
+            56, 28,  1, 43, 46, 27,  0, 35,
+            62, 31, 58,  4,  5, 49, 54,  6,
+            15, 52, 12, 40,  7, 42, 45, 16,
+            25, 57, 48, 13, 10, 39,  8, 44,
+            20, 47, 38, 22, 17, 37, 36, 26
+    };
+    //getting LS1B using Matt Taylor's Folding trick
+    public static int getLSB(long bb){
+        if (bb == 0){
+            return -1;
+        }
+        int folded;
+        assert (bb != 0);
+        bb ^= bb - 1;
+        folded = (int) (bb ^ (bb >>> 32));
+        return index64[folded * 0x78291ACF >>> 26];
+    }
+    public static HashMap<Integer, Long> generateMovesList(color color, LookupTables tables){
+        HashMap<Integer, Long> list = new HashMap<>();
+        int LS1Bindex;
+        int index;
+        long temp;
+        int piece = 0;
+        for (long i : bitBoards[color.ordinal()]){
+            LS1Bindex = getLSB(i);
+            index = LS1Bindex;
+            temp = i;
+            while (index!=-1){
+                list.put(LS1Bindex, tables.getAttacks(pieces.values()[piece],LS1Bindex,color, occupancy[color.white.ordinal()],occupancy[color.black.ordinal()]));
+                i = i>>>(index+1);
+                index = getLSB(i);
+                LS1Bindex += index+1;
+            }
+            i = temp;
+            piece++;
+        }
+        return list;
+    }
     public void makeMove(){
 
     }
 
-    //todo: makemove
+    //todo: get lsb,moves list, makemove
     //todo: perft function
     //todo: minmax
 }
