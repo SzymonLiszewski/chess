@@ -32,11 +32,12 @@ public class Game implements Serializable {
         white, black
     }
 
-    public static void main(String args[]){
+    public static void main(String[] args){
        LookupTables lookupTables = new LookupTables();
 
         readFen("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
         //printBitBoard(bitBoards[color.white.ordinal()][pieces.king.ordinal()]);
+        System.out.println("found nodes: "+String.valueOf(perft(3,lookupTables, color.white)));
         UCI(lookupTables);
         //bitBoards[color.white.ordinal()][pieces.pawn.ordinal()] = setBit(bitBoards[color.white.ordinal()][pieces.pawn.ordinal()],squares.e4);
         List<Move> movesList= generateMovesList(color.white,lookupTables);
@@ -178,27 +179,27 @@ public class Game implements Serializable {
                             occupancy[color.white.ordinal()] = setBit(occupancy[color.white.ordinal()],squareIdx );
                             break;
                         case 'p':
-                            bitBoards[color.black.ordinal()][pieces.pawn.ordinal()] = setBit(bitBoards[color.white.ordinal()][pieces.pawn.ordinal()], squareIdx);
+                            bitBoards[color.black.ordinal()][pieces.pawn.ordinal()] = setBit(bitBoards[color.black.ordinal()][pieces.pawn.ordinal()], squareIdx);
                             occupancy[color.black.ordinal()] = setBit(occupancy[color.black.ordinal()],squareIdx );
                             break;
                         case 'r':
-                            bitBoards[color.black.ordinal()][pieces.rook.ordinal()] = setBit(bitBoards[color.white.ordinal()][pieces.rook.ordinal()], squareIdx);
+                            bitBoards[color.black.ordinal()][pieces.rook.ordinal()] = setBit(bitBoards[color.black.ordinal()][pieces.rook.ordinal()], squareIdx);
                             occupancy[color.black.ordinal()] = setBit(occupancy[color.black.ordinal()],squareIdx );
                             break;
                         case 'b':
-                            bitBoards[color.black.ordinal()][pieces.bishop.ordinal()] = setBit(bitBoards[color.white.ordinal()][pieces.bishop.ordinal()], squareIdx);
+                            bitBoards[color.black.ordinal()][pieces.bishop.ordinal()] = setBit(bitBoards[color.black.ordinal()][pieces.bishop.ordinal()], squareIdx);
                             occupancy[color.black.ordinal()] = setBit(occupancy[color.black.ordinal()],squareIdx );
                             break;
                         case 'n':
-                            bitBoards[color.black.ordinal()][pieces.knight.ordinal()] = setBit(bitBoards[color.white.ordinal()][pieces.knight.ordinal()], squareIdx);
+                            bitBoards[color.black.ordinal()][pieces.knight.ordinal()] = setBit(bitBoards[color.black.ordinal()][pieces.knight.ordinal()], squareIdx);
                             occupancy[color.black.ordinal()] = setBit(occupancy[color.black.ordinal()],squareIdx );
                             break;
                         case 'k':
-                            bitBoards[color.black.ordinal()][pieces.king.ordinal()] = setBit(bitBoards[color.white.ordinal()][pieces.king.ordinal()], squareIdx);
+                            bitBoards[color.black.ordinal()][pieces.king.ordinal()] = setBit(bitBoards[color.black.ordinal()][pieces.king.ordinal()], squareIdx);
                             occupancy[color.black.ordinal()] = setBit(occupancy[color.black.ordinal()],squareIdx );
                             break;
                         case 'q':
-                            bitBoards[color.black.ordinal()][pieces.queen.ordinal()] = setBit(bitBoards[color.white.ordinal()][pieces.queen.ordinal()], squareIdx);
+                            bitBoards[color.black.ordinal()][pieces.queen.ordinal()] = setBit(bitBoards[color.black.ordinal()][pieces.queen.ordinal()], squareIdx);
                             occupancy[color.black.ordinal()] = setBit(occupancy[color.black.ordinal()],squareIdx );
                             break;
                     }
@@ -264,6 +265,21 @@ public class Game implements Serializable {
         return list;
     }
 
+    public static long perft(int depth, LookupTables lookupTables, color color){
+        List<Move> moves;
+        int n_moves;
+        long nodes = 0;
+        if (depth == 0){
+            return (long) 1;
+        }
+        moves = generateMovesList(color, lookupTables);
+        for (int i=0; i<moves.size();i++){
+            makeMove(moves.get(i));
+            nodes+=perft(depth-1,lookupTables,color.values()[(color.ordinal()+1)%2]);
+            UndoMove(moves.get(i));
+        }
+        return nodes;
+    }
 
     public static Move decide(List<Move> movesList){
         Random rand = new Random();
@@ -287,10 +303,25 @@ public class Game implements Serializable {
         if (enemyOcc != occupancy[(move.getColor().ordinal()+1)%2]){    //check if captured any piece
             for (int i=0;i< bitBoards[(move.getColor().ordinal()+1)%2].length;i++){
                 if ((bitBoards[(move.getColor().ordinal()+1)%2][i] & bitBoards[(move.getColor().ordinal()+1)%2][move.getPiece().ordinal()])!=0){
+                    move.setCaptured(pieces.values()[i]);
                     bitBoards[(move.getColor().ordinal()+1)%2][i] = removeBit(bitBoards[(move.getColor().ordinal()+1)%2][i],move.getTarget());
                     break;
                 }
             }
+        }
+    }
+
+    public static void UndoMove(Move move){
+        //remove bit from previous position and set on new position for pieces bitboard
+        bitBoards[move.getColor().ordinal()][move.getPiece().ordinal()] = removeBit(bitBoards[move.getColor().ordinal()][move.getPiece().ordinal()],move.getTarget());
+        bitBoards[move.getColor().ordinal()][move.getPiece().ordinal()] = setBit(bitBoards[move.getColor().ordinal()][move.getPiece().ordinal()], move.getSource());
+
+        //remove bit from previous position and set on new position for occupancy bitboard
+        occupancy[move.getColor().ordinal()] = removeBit( occupancy[move.getColor().ordinal()],move.getTarget());
+        occupancy[move.getColor().ordinal()] = setBit( occupancy[move.getColor().ordinal()], move.getSource());
+
+        if (move.getCaptured()!=null){
+            bitBoards[(move.getColor().ordinal()+1)%2][move.getCaptured().ordinal()] = setBit(bitBoards[(move.getColor().ordinal()+1)%2][move.getCaptured().ordinal()], move.getSource());
         }
     }
 

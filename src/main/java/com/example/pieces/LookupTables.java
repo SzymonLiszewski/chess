@@ -156,10 +156,16 @@ public class LookupTables {
             if (((bitboard>>>8))!=0) {
                 attacks |= (bitboard >>> 8);
             }
+            if (square.ordinal()<=Game.squares.h2.ordinal() && square.ordinal()>=Game.squares.a2.ordinal()){
+                attacks |= (bitboard >>> 16);
+            }
         }
         else {
             if ((bitboard << 9) != 0) {
                 attacks |= (bitboard << 8);
+            }
+            if (square.ordinal()<=Game.squares.h7.ordinal() && square.ordinal()>=Game.squares.a7.ordinal()){
+                attacks |= (bitboard << 16);
             }
         }
 
@@ -364,4 +370,5 @@ public class LookupTables {
         }
         return 0;
     }
+
 }

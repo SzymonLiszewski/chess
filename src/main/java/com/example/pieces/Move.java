@@ -6,6 +6,15 @@ public class Move {
     Game.pieces piece;
     Game.color color;
     Game.pieces promotedPiece;
+    Game.pieces Captured;
+
+    public Game.pieces getCaptured() {
+        return Captured;
+    }
+
+    public void setCaptured(Game.pieces captured) {
+        Captured = captured;
+    }
 
     public Move(Game.squares source, Game.squares target, Game.pieces piece, Game.color color) {
         this.source = source;
