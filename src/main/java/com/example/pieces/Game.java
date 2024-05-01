@@ -1,5 +1,7 @@
 package com.example.pieces;
 
+import java.io.FileOutputStream;
+import java.io.PrintStream;
 import java.io.Serializable;
 import java.util.*;
 
@@ -37,7 +39,7 @@ public class Game implements Serializable {
 
         readFen("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
         //printBitBoard(bitBoards[color.white.ordinal()][pieces.king.ordinal()]);
-        //System.out.println("found nodes: "+String.valueOf(perft(3,lookupTables, color.white)));
+        System.out.println("found nodes: "+String.valueOf(perft(3,lookupTables, color.white)));
         UCI(lookupTables);
         //bitBoards[color.white.ordinal()][pieces.pawn.ordinal()] = setBit(bitBoards[color.white.ordinal()][pieces.pawn.ordinal()],squares.e4);
         List<Move> movesList= generateMovesList(color.white,lookupTables);
@@ -275,10 +277,8 @@ public class Game implements Serializable {
         }
         moves = generateMovesList(color, lookupTables);
         for (int i=0; i<moves.size();i++){
-            if (depth == 1){
-                printBitBoard(occupancy[color.ordinal()]);
-            }
             makeMove(moves.get(i));
+            //System.out.println(moves.get(i).toString());
             nodes+=perft(depth-1,lookupTables, Game.color.values()[(color.ordinal()+1)%2]);
             UndoMove(moves.get(i));
         }
@@ -325,7 +325,7 @@ public class Game implements Serializable {
         occupancy[move.getColor().ordinal()] = setBit( occupancy[move.getColor().ordinal()], move.getSource());
 
         if (move.getCaptured()!=null){
-            bitBoards[(move.getColor().ordinal()+1)%2][move.getCaptured().ordinal()] = setBit(bitBoards[(move.getColor().ordinal()+1)%2][move.getCaptured().ordinal()], move.getSource());
+            bitBoards[(move.getColor().ordinal()+1)%2][move.getCaptured().ordinal()] = setBit(bitBoards[(move.getColor().ordinal()+1)%2][move.getCaptured().ordinal()], move.getTarget());
         }
     }
 
