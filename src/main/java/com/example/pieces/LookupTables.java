@@ -8,6 +8,7 @@ import static com.example.pieces.Game.setBit;
 public class LookupTables {
     static long[][] pawnAttacks = new long[2][64];   //bitboards containing possible pawn attacks from
                                                     // all positions for both black and white
+    static long[][] pawnMoves = new long[2][64];
     public static long[] knightAttacks = new long[64];
     public static long[] kingAttacks = new long[64];
     public static long[] bitMask = new long[64];
@@ -18,6 +19,7 @@ public class LookupTables {
 
     public LookupTables() {
         pawnAttacks = generatePawnAttackTable();
+        pawnMoves = generatePawnMovesTable();
         knightAttacks = generateKnightAttackTable();
         kingAttacks = generateKingAttackTable();
         bitMask = generateBitMask();
@@ -141,6 +143,33 @@ public class LookupTables {
         long[] attacks = new long[64];
         for (Game.squares i : Game.squares.values()){
             attacks[i.ordinal()] = maskKingAttacks(i, Game.color.white);
+        }
+        return attacks;
+    }
+    public static long maskPawnMoves(Game.squares square, Game.color side) {
+        long attacks = 0;
+        long bitboard = 0;
+
+        bitboard = setBit(bitboard, square);
+
+        if (side == Game.color.white){
+            if (((bitboard>>>8))!=0) {
+                attacks |= (bitboard >>> 8);
+            }
+        }
+        else {
+            if ((bitboard << 9) != 0) {
+                attacks |= (bitboard << 8);
+            }
+        }
+
+        return attacks;
+    }
+    public static long[][] generatePawnMovesTable(){
+        long[][] attacks = new long[2][64];
+        for (Game.squares i : Game.squares.values()){
+            attacks[Game.color.white.ordinal()][i.ordinal()] = maskPawnMoves(i, Game.color.white);
+            attacks[Game.color.black.ordinal()][i.ordinal()] = maskPawnMoves(i, Game.color.black);
         }
         return attacks;
     }
@@ -297,11 +326,15 @@ public class LookupTables {
 
     public long getAttacks(Game.pieces piece, int position, Game.color color, long wocc, long bocc){    //wocc, bocc - white/black occupancy bitboard
         long occ;
+        long opponentOcc;
+        long all = wocc+bocc;
         if (color == Game.color.white){
             occ = wocc;
+            opponentOcc = bocc;
         }
         else{
             occ = bocc;
+            opponentOcc = wocc;
         }
         if (piece == Game.pieces.knight){
             return knightAttacks[position] - (knightAttacks[position] & occ);                       // masking bits so pieces cant attack squares occupied
@@ -310,7 +343,24 @@ public class LookupTables {
             return kingAttacks[position] - (kingAttacks[position] & occ);
         }
         else if (piece == Game.pieces.pawn){
+            long moves = pawnMoves[color.ordinal()][position] -(pawnMoves[color.ordinal()][position] & all);
             //return pawnAttacks[color.ordinal()][position] -(pawnAttacks[color.ordinal()][position] & occ);
+            return moves;
+        }
+        else if (piece == Game.pieces.rook){
+            long attacks = fileAttacks(all, position) + rankAttacks(all, Game.squares.values()[position]);
+            attacks = attacks - (attacks & occ);
+            return attacks;
+        }
+        else if (piece == Game.pieces.bishop){
+            long attacks = diagonalAttacks (all, position) + antiDiagonalAttacks (all, position);
+            attacks = attacks - (attacks & occ);
+            return attacks;
+        }
+        else if (piece == Game.pieces.queen){
+            long attacks = diagonalAttacks (all, position) + antiDiagonalAttacks (all, position)+fileAttacks(all, position) + rankAttacks(all, Game.squares.values()[position]);
+            attacks = attacks - (attacks & occ);
+            return attacks;
         }
         return 0;
     }
