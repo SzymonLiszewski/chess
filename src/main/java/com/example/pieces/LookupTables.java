@@ -157,7 +157,8 @@ public class LookupTables {
                 attacks |= (bitboard >>> 8);
             }
             if (square.ordinal()<=Game.squares.h2.ordinal() && square.ordinal()>=Game.squares.a2.ordinal()){
-                attacks |= (bitboard >>> 16);
+                //todo: first pawn move
+                //attacks |= (bitboard >>> 16);
             }
         }
         else {
@@ -165,7 +166,7 @@ public class LookupTables {
                 attacks |= (bitboard << 8);
             }
             if (square.ordinal()<=Game.squares.h7.ordinal() && square.ordinal()>=Game.squares.a7.ordinal()){
-                attacks |= (bitboard << 16);
+                //attacks |= (bitboard << 16);
             }
         }
 

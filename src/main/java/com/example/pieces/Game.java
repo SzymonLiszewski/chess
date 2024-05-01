@@ -37,13 +37,10 @@ public class Game implements Serializable {
 
         readFen("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
         //printBitBoard(bitBoards[color.white.ordinal()][pieces.king.ordinal()]);
-        System.out.println("found nodes: "+String.valueOf(perft(3,lookupTables, color.white)));
+        //System.out.println("found nodes: "+String.valueOf(perft(3,lookupTables, color.white)));
         UCI(lookupTables);
         //bitBoards[color.white.ordinal()][pieces.pawn.ordinal()] = setBit(bitBoards[color.white.ordinal()][pieces.pawn.ordinal()],squares.e4);
         List<Move> movesList= generateMovesList(color.white,lookupTables);
-        //System.out.println(squares.b1.ordinal());
-        //printBitBoard(movesList.get(squares.b1.ordinal()));
-        //System.out.println(movesList.get(0).toString());
     }
 
     //Printing board with 1 on occupied squares and 0 on free squares
@@ -203,7 +200,7 @@ public class Game implements Serializable {
                             occupancy[color.black.ordinal()] = setBit(occupancy[color.black.ordinal()],squareIdx );
                             break;
                     }
-                    board = board = setBit(board, squareIdx);
+                    board = setBit(board, squareIdx);
                     squareIdx+=1;
                 }
             }
@@ -245,7 +242,7 @@ public class Game implements Serializable {
             index = LS1Bindex;
             temp = i;
             while (index!=-1){
-                long attacks = tables.getAttacks(pieces.values()[piece],LS1Bindex,color, occupancy[color.white.ordinal()],occupancy[color.black.ordinal()]);
+                long attacks = tables.getAttacks(pieces.values()[piece],LS1Bindex,color, occupancy[Game.color.white.ordinal()],occupancy[Game.color.black.ordinal()]);
                 int LS1Bindex2 = getLSB(attacks);
                 int index2 = LS1Bindex2;
                 while (index2!=-1){
@@ -256,6 +253,10 @@ public class Game implements Serializable {
                 }
                 //list.put(LS1Bindex, tables.getAttacks(pieces.values()[piece],LS1Bindex,color, occupancy[color.white.ordinal()],occupancy[color.black.ordinal()]));
                 i = i>>>(index+1);
+                if (index+1==64){   //shifting bits by more than 63 results in shifting by n%64
+                    i = i>>>32;
+                    i = i>>>32;
+                }
                 index = getLSB(i);
                 LS1Bindex += index+1;
             }
@@ -274,8 +275,11 @@ public class Game implements Serializable {
         }
         moves = generateMovesList(color, lookupTables);
         for (int i=0; i<moves.size();i++){
+            if (depth == 1){
+                printBitBoard(occupancy[color.ordinal()]);
+            }
             makeMove(moves.get(i));
-            nodes+=perft(depth-1,lookupTables,color.values()[(color.ordinal()+1)%2]);
+            nodes+=perft(depth-1,lookupTables, Game.color.values()[(color.ordinal()+1)%2]);
             UndoMove(moves.get(i));
         }
         return nodes;
@@ -302,7 +306,7 @@ public class Game implements Serializable {
         occupancy[(move.getColor().ordinal()+1)%2] = removeBit(occupancy[(move.getColor().ordinal()+1)%2],move.getTarget());
         if (enemyOcc != occupancy[(move.getColor().ordinal()+1)%2]){    //check if captured any piece
             for (int i=0;i< bitBoards[(move.getColor().ordinal()+1)%2].length;i++){
-                if ((bitBoards[(move.getColor().ordinal()+1)%2][i] & bitBoards[(move.getColor().ordinal()+1)%2][move.getPiece().ordinal()])!=0){
+                if ((bitBoards[(move.getColor().ordinal()+1)%2][i] & bitBoards[move.getColor().ordinal()][move.getPiece().ordinal()])!=0){
                     move.setCaptured(pieces.values()[i]);
                     bitBoards[(move.getColor().ordinal()+1)%2][i] = removeBit(bitBoards[(move.getColor().ordinal()+1)%2][i],move.getTarget());
                     break;
