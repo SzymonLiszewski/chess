@@ -20,7 +20,7 @@ public class Game implements Serializable {
     public static LookupTables lookupTables;
 
     public static MinMaxAgent agent;
-    public static int engineDepth = 5;
+    public static int engineDepth = 1;
 
     public enum squares {
         a8, b8, c8, d8, e8, f8, g8, h8,
@@ -47,8 +47,8 @@ public class Game implements Serializable {
 
         control[0] = 0;
         control[1] = 0;
-        readFen("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
-
+        readFen("3qkbnr/R3p3/7p/1r4p1/4p3/2P5/5PPP/3QK1NR w Kk - 0 19");
+        printBitBoard(occupancy[color.black.ordinal()]);
         /*Instant start = Instant.now();
         System.out.println("found nodes: "+String.valueOf(perft(3,lookupTables, color.white)));
         Instant end = Instant.now();
@@ -124,6 +124,7 @@ public class Game implements Serializable {
             } else if (command.startsWith("position")) {
                 String[] s = command.split(" ");
                 if (!Objects.equals(s[s.length - 1], "startpos")){
+                    //generateMovesList(onMove, lookupTables);
                     makeMove(encode(s[s.length - 1],onMove));
                     //onMove = color.values()[(onMove.ordinal()+1)%2];
                 }
@@ -315,6 +316,7 @@ public class Game implements Serializable {
 
 
     public static boolean isCheck(color color){
+        generateMovesList(Game.color.values()[(color.ordinal()+1)%2],Game.lookupTables);
         if ((bitBoards[color.ordinal()][pieces.king.ordinal()] & control[(color.ordinal()+1)%2])==0){
             return false;
         }
@@ -324,6 +326,7 @@ public class Game implements Serializable {
     public static boolean isMate(color color, List<Move> movesList){
         for (Move m : movesList){
             makeMove(m);
+            generateMovesList(Game.color.values()[(color.ordinal()+1)%2],Game.lookupTables);
             if (!isCheck(color)){
                 UndoMove(m);
                 return false;
@@ -368,6 +371,7 @@ public class Game implements Serializable {
 
         if (move.getCaptured()!=null){
             bitBoards[(move.getColor().ordinal()+1)%2][move.getCaptured().ordinal()] = setBit(bitBoards[(move.getColor().ordinal()+1)%2][move.getCaptured().ordinal()], move.getTarget());
+            occupancy[(move.getColor().ordinal()+1)%2] = setBit(occupancy[(move.getColor().ordinal()+1)%2], move.getTarget());
         }
         onMove = color.values()[(onMove.ordinal()+1)%2];
     }

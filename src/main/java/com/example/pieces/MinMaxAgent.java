@@ -15,15 +15,21 @@ public class MinMaxAgent {
         } else {
             color = Game.color.values()[(Game.engineSide.ordinal() + 1) % 2];
         }
-        List<Move> moves = Game.generateMovesList(color, Game.lookupTables);
-        if (Game.isCheck(color) && Game.isMate(Game.engineSide, moves)) {
+        List<Move> moves = Game.generateMovesList(Game.engineSide, Game.lookupTables);
+        if (Game.isCheck(Game.engineSide) && Game.isMate(Game.engineSide, moves)) {
+            Game.generateMovesList(color, Game.lookupTables);
+            Game.generateMovesList(Game.color.values()[(Game.engineSide.ordinal() + 1) % 2], Game.lookupTables);
             return -1;
         }
         List<Move> opponentMoves = Game.generateMovesList(Game.color.values()[(Game.engineSide.ordinal() + 1) % 2], Game.lookupTables);
-        if (Game.isCheck(Game.color.values()[(Game.engineSide.ordinal() + 1) % 2]) && Game.isMate(Game.engineSide, opponentMoves)) {
+        if (Game.isCheck(Game.color.values()[(Game.engineSide.ordinal() + 1) % 2]) && Game.isMate(Game.color.values()[(Game.engineSide.ordinal() + 1) % 2], opponentMoves)) {
+            Game.generateMovesList(color, Game.lookupTables);
+            Game.generateMovesList(Game.color.values()[(Game.engineSide.ordinal() + 1) % 2], Game.lookupTables);
             return 1;
         }
         if (depth == 0) {
+            Game.generateMovesList(color, Game.lookupTables);
+            Game.generateMovesList(Game.color.values()[(Game.engineSide.ordinal() + 1) % 2], Game.lookupTables);
             return 0;
         } else if (flag == 1) {
             double v = Double.NEGATIVE_INFINITY;
@@ -39,10 +45,12 @@ public class MinMaxAgent {
                         break;
                     }
                 } else {
-                    l.add(Double.NEGATIVE_INFINITY);
+                    //l.add(Double.NEGATIVE_INFINITY);
                 }
                 Game.UndoMove(m);
             }
+            Game.generateMovesList(color, Game.lookupTables);
+            Game.generateMovesList(Game.color.values()[(Game.engineSide.ordinal() + 1) % 2], Game.lookupTables);
             return v;
         } else {
             double v = Double.POSITIVE_INFINITY;
@@ -58,10 +66,12 @@ public class MinMaxAgent {
                         break;
                     }
                 } else {
-                    l.add(Double.NEGATIVE_INFINITY);
+                    //l.add(Double.POSITIVE_INFINITY);
                 }
                 Game.UndoMove(m);
             }
+            Game.generateMovesList(color, Game.lookupTables);
+            Game.generateMovesList(Game.color.values()[(Game.engineSide.ordinal() + 1) % 2], Game.lookupTables);
             return v;
         }
     }
@@ -72,12 +82,18 @@ public class MinMaxAgent {
         for (Move m : moves) {
             Game.makeMove(m);
             if (!Game.isCheck(Game.engineSide)) {
+                Game.generateMovesList(Game.engineSide, Game.lookupTables);
+                System.out.println(m);
+                Game.printBitBoard(Game.bitBoards[Game.color.black.ordinal()][Game.pieces.king.ordinal()]);
+                Game.printBitBoard(Game.control[Game.color.white.ordinal()]);
                 moveValue.put(m, minMax(-1, depth - 1, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY));
             }
             else{
-                moveValue.put(m,Double.NEGATIVE_INFINITY);
+                //moveValue.put(m,Double.NEGATIVE_INFINITY);
             }
             Game.UndoMove(m);
+            System.out.println(m);
+            Game.printBitBoard(Game.occupancy[Game.color.black.ordinal()]);
         }
         double max = Double.NEGATIVE_INFINITY;
         Move maxMove = null;
@@ -86,6 +102,8 @@ public class MinMaxAgent {
                 maxMove = element.getKey();
                 max = element.getValue();
             }
+            System.out.print(element.getKey().toString());
+            System.out.println(": "+element.getValue());
         }
         return maxMove;
     }

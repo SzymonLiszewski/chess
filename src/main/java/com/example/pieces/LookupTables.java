@@ -351,8 +351,9 @@ public class LookupTables {
         }
         else if (piece == Game.pieces.pawn){
             long moves = pawnMoves[color.ordinal()][position] -(pawnMoves[color.ordinal()][position] & all);
+            long attacks = pawnAttacks[color.ordinal()][position] & opponentOcc;
             //return pawnAttacks[color.ordinal()][position] -(pawnAttacks[color.ordinal()][position] & occ);
-            return moves;
+            return moves | attacks;
         }
         else if (piece == Game.pieces.rook){
             long attacks = fileAttacks(all, position) + rankAttacks(all, Game.squares.values()[position]);

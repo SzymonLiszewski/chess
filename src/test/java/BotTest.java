@@ -8,5 +8,10 @@ import static org.junit.Assert.*;
 
 public class BotTest {
 
+    @Test
+    public void MateInOne(){
+        Game game = new Game();
+
+    }
 
 }
