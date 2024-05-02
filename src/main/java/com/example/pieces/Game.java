@@ -3,17 +3,24 @@ package com.example.pieces;
 import java.io.FileOutputStream;
 import java.io.PrintStream;
 import java.io.Serializable;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.*;
 
 
 public class Game implements Serializable {
     static long board = 0;
-    static long[] occupancy = new long[2];   //occupancy bitboard for white and black
-    static long[][] bitBoards = new long[2][6];    //bitboards containing positions of all pieces
+    public static long[] occupancy = new long[2];   //occupancy bitboard for white and black
+    public static long[][] bitBoards = new long[2][6];    //bitboards containing positions of all pieces
+    public static long[] control = new long[2];    //squares controlled by white/black pieces (controlled - can be attacked)
 
 
-    static color engineSide = color.white;
-    static color onMove = color.white;
+    public static color engineSide = color.white;
+    public static color onMove = color.white;
+    public static LookupTables lookupTables;
+
+    public static MinMaxAgent agent;
+    public static int engineDepth = 5;
 
     public enum squares {
         a8, b8, c8, d8, e8, f8, g8, h8,
@@ -35,14 +42,19 @@ public class Game implements Serializable {
     }
 
     public static void main(String[] args){
-       LookupTables lookupTables = new LookupTables();
+        lookupTables = new LookupTables();
+        agent = new MinMaxAgent();
 
+        control[0] = 0;
+        control[1] = 0;
         readFen("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
-        //printBitBoard(bitBoards[color.white.ordinal()][pieces.king.ordinal()]);
+
+        /*Instant start = Instant.now();
         System.out.println("found nodes: "+String.valueOf(perft(3,lookupTables, color.white)));
+        Instant end = Instant.now();
+        long executionTime = Duration.between(start, end).toMillis();
+        System.out.println("Czas wykonania: " + executionTime + " milisekund");*/
         UCI(lookupTables);
-        //bitBoards[color.white.ordinal()][pieces.pawn.ordinal()] = setBit(bitBoards[color.white.ordinal()][pieces.pawn.ordinal()],squares.e4);
-        List<Move> movesList= generateMovesList(color.white,lookupTables);
     }
 
     //Printing board with 1 on occupied squares and 0 on free squares
@@ -113,14 +125,15 @@ public class Game implements Serializable {
                 String[] s = command.split(" ");
                 if (!Objects.equals(s[s.length - 1], "startpos")){
                     makeMove(encode(s[s.length - 1],onMove));
-                    onMove = color.values()[(onMove.ordinal()+1)%2];
+                    //onMove = color.values()[(onMove.ordinal()+1)%2];
                 }
                 //handlePositionCommand(command);
             } else if (command.startsWith("go")) {
-                Move move = decide(generateMovesList(engineSide, lookupTables));
+                //Move move = decide(generateMovesList(engineSide, lookupTables));
+                Move move = agent.decide(engineDepth);
                 System.out.println("bestmove " +move.toString());
                 makeMove(move);
-                onMove = color.values()[(onMove.ordinal()+1)%2];
+                //onMove = color.values()[(onMove.ordinal()+1)%2];
                 //handleGoCommand(command);
             } else if (command.equals("stop")) {
                 //handleStopCommand();
@@ -235,6 +248,7 @@ public class Game implements Serializable {
     }
     public static List<Move> generateMovesList(color color, LookupTables tables){
         List<Move> list = new ArrayList<>();
+        control[color.ordinal()] = 0;
         int LS1Bindex;
         int index;
         long temp;
@@ -245,11 +259,16 @@ public class Game implements Serializable {
             temp = i;
             while (index!=-1){
                 long attacks = tables.getAttacks(pieces.values()[piece],LS1Bindex,color, occupancy[Game.color.white.ordinal()],occupancy[Game.color.black.ordinal()]);
+                control[color.ordinal()] = control[color.ordinal()] | (attacks ^ control[color.ordinal()]);
                 int LS1Bindex2 = getLSB(attacks);
                 int index2 = LS1Bindex2;
                 while (index2!=-1){
                     list.add(new Move(squares.values()[LS1Bindex], squares.values()[LS1Bindex2],pieces.values()[piece], color));
                     attacks = attacks>>>(index2+1);
+                    if (index2+1==64){   //shifting bits by more than 63 results in shifting by n%64
+                        attacks = attacks>>>32;
+                        attacks = attacks>>>32;
+                    }
                     index2 = getLSB(attacks);
                     LS1Bindex2 += index2+1;
                 }
@@ -279,7 +298,10 @@ public class Game implements Serializable {
         for (int i=0; i<moves.size();i++){
             makeMove(moves.get(i));
             //System.out.println(moves.get(i).toString());
-            nodes+=perft(depth-1,lookupTables, Game.color.values()[(color.ordinal()+1)%2]);
+            if (!isCheck(color)){
+                nodes+=perft(depth-1,lookupTables, Game.color.values()[(color.ordinal()+1)%2]);
+            }
+
             UndoMove(moves.get(i));
         }
         return nodes;
@@ -291,6 +313,25 @@ public class Game implements Serializable {
         return (movesList.get(randomInt));
     }
 
+
+    public static boolean isCheck(color color){
+        if ((bitBoards[color.ordinal()][pieces.king.ordinal()] & control[(color.ordinal()+1)%2])==0){
+            return false;
+        }
+        return true;
+    }
+
+    public static boolean isMate(color color, List<Move> movesList){
+        for (Move m : movesList){
+            makeMove(m);
+            if (!isCheck(color)){
+                UndoMove(m);
+                return false;
+            }
+            UndoMove(m);
+        }
+        return true;
+    }
 
     public static void makeMove(Move move){
         //remove bit from previous position and set on new position for pieces bitboard
@@ -313,6 +354,7 @@ public class Game implements Serializable {
                 }
             }
         }
+        onMove = color.values()[(onMove.ordinal()+1)%2];
     }
 
     public static void UndoMove(Move move){
@@ -327,6 +369,7 @@ public class Game implements Serializable {
         if (move.getCaptured()!=null){
             bitBoards[(move.getColor().ordinal()+1)%2][move.getCaptured().ordinal()] = setBit(bitBoards[(move.getColor().ordinal()+1)%2][move.getCaptured().ordinal()], move.getTarget());
         }
+        onMove = color.values()[(onMove.ordinal()+1)%2];
     }
 
     public static Move encode(String string, color color){

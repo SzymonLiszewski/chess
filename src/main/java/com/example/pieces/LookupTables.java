@@ -366,7 +366,7 @@ public class LookupTables {
         }
         else if (piece == Game.pieces.queen){
             long attacks = diagonalAttacks (all, position) + antiDiagonalAttacks (all, position)+fileAttacks(all, position) + rankAttacks(all, Game.squares.values()[position]);
-            attacks = attacks - (attacks & occ);
+            attacks = attacks - (attacks & occ); //todo: attacks = attacks ^ occ ???
             return attacks;
         }
         return 0;
