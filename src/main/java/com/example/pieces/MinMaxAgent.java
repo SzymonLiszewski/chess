@@ -84,16 +84,16 @@ public class MinMaxAgent {
             if (!Game.isCheck(Game.engineSide)) {
                 Game.generateMovesList(Game.engineSide, Game.lookupTables);
                 System.out.println(m);
-                Game.printBitBoard(Game.bitBoards[Game.color.black.ordinal()][Game.pieces.king.ordinal()]);
-                Game.printBitBoard(Game.control[Game.color.white.ordinal()]);
+                Game.printBitBoard(Game.bitBoards[Game.color.white.ordinal()][Game.pieces.rook.ordinal()]);
+                Game.printBitBoard(Game.lookupTables.getAttacks(Game.pieces.rook,Game.squares.a7.ordinal(), Game.color.white, Game.occupancy[0], Game.occupancy[1]));
                 moveValue.put(m, minMax(-1, depth - 1, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY));
             }
             else{
                 //moveValue.put(m,Double.NEGATIVE_INFINITY);
             }
             Game.UndoMove(m);
-            System.out.println(m);
-            Game.printBitBoard(Game.occupancy[Game.color.black.ordinal()]);
+            //System.out.println(m);
+            //Game.printBitBoard(Game.occupancy[Game.color.black.ordinal()]);
         }
         double max = Double.NEGATIVE_INFINITY;
         Move maxMove = null;

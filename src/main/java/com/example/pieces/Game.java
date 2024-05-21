@@ -48,7 +48,8 @@ public class Game implements Serializable {
         control[0] = 0;
         control[1] = 0;
         readFen("3qkbnr/R3p3/7p/1r4p1/4p3/2P5/5PPP/3QK1NR w Kk - 0 19");
-        printBitBoard(occupancy[color.black.ordinal()]);
+        occupancy[1] = 0;
+        printBitBoard(lookupTables.getAttacks(pieces.rook,squares.a7.ordinal(), color.white,occupancy[0],occupancy[1]));
         /*Instant start = Instant.now();
         System.out.println("found nodes: "+String.valueOf(perft(3,lookupTables, color.white)));
         Instant end = Instant.now();
@@ -326,7 +327,7 @@ public class Game implements Serializable {
     public static boolean isMate(color color, List<Move> movesList){
         for (Move m : movesList){
             makeMove(m);
-            generateMovesList(Game.color.values()[(color.ordinal()+1)%2],Game.lookupTables);
+            //generateMovesList(Game.color.values()[(color.ordinal()+1)%2],Game.lookupTables);
             if (!isCheck(color)){
                 UndoMove(m);
                 return false;
@@ -391,7 +392,6 @@ public class Game implements Serializable {
         return new Move(s1,s2,piece,color);
     }
 
-    //todo: encode/decode move, makemove
-    //todo: perft function
-    //todo: minmax
+    //todo: don't include pawn moves in control[]
+    //todo: check rook rank attacks
 }
